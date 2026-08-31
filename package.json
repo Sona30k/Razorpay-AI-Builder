@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "npm --prefix frontend run dev",
-    "build": "npm --prefix frontend run build"
+    "build": "npm --prefix frontend run build",
+    "import:companies": "node scripts/import-company-data.mjs",
+    "validate:companies": "node scripts/validate-company-data.mjs",
+    "geocode:companies": "node scripts/geocode-companies.mjs"
   }
 }

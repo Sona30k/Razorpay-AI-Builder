@@ -1,0 +1,7 @@
+{
+  "source": "data/companies/startups-india.csv",
+  "sourceRows": 3044,
+  "imported": 1419,
+  "duplicatesRemoved": 418,
+  "invalidCoords": 0
+}

@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare:city-data": "node scripts/prepare-city-data.mjs",
+    "extract:city-data": "/opt/anaconda3/bin/python3 scripts/extract_city_data.py ../data/osm/india-260830.osm.pbf",
+    "validate:city-data": "node scripts/validate-city-data.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

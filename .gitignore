@@ -11,3 +11,6 @@ build/
 
 *.log
 .DS_Store
+
+# Local OpenStreetMap import source; generated static city JSON is committed instead.
+data/osm/*.osm.pbf

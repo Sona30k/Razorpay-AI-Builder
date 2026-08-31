@@ -1,0 +1,20 @@
+export type Company = {
+    id: string;
+    name: string;
+    logo?: string;
+    city: string;
+    state?: string | null;
+    category?: string;
+    description?: string;
+    address?: string;
+    website?: string;
+    latitude: number | null;
+    longitude: number | null;
+    products?: string[];
+    businessModel?: string;
+    industry?: string;
+    funding?: string;
+    investors?: string;
+    locationPrecision?: string;
+    original?: Record<string, unknown>;
+};
