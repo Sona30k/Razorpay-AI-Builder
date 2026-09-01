@@ -1,220 +1,111 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { CanvasTexture, Group, Mesh, Points, SRGBColorSpace } from "three";
-import { GLOBE_RADIUS } from "@/lib/constants";
+import { BufferGeometry, DoubleSide, Float32BufferAttribute, Group, Mesh, Points, ShapeUtils, Vector2, Vector3 } from "three";
+import { GLOBE_RADIUS, INDIA_FOCUS_GROUP_ROTATION_Y, latLonToSphereVector } from "@/lib/constants";
 
-type GlobeProps = {
-  children?: ReactNode;
-  isFocusingIndia: boolean;
-};
+type Position = [number, number];
+type Geometry = { type: "Polygon" | "MultiPolygon"; coordinates: Position[][] | Position[][][] };
+type FeatureCollection = { features: Array<{ geometry: Geometry | null }> };
+type GlobeProps = { children?: ReactNode; isFocusingIndia: boolean };
+
+function pointAt([longitude, latitude]: Position, radius: number) {
+  const point = latLonToSphereVector(latitude, longitude, radius);
+  return [point.x, point.y, point.z];
+}
+
+function polygons(geometry: Geometry) {
+  return geometry.type === "Polygon" ? [geometry.coordinates as Position[][]] : geometry.coordinates as Position[][][];
+}
+
+function closeRemoved(ring: Position[]) {
+  return ring.length > 2 && ring[0][0] === ring.at(-1)?.[0] && ring[0][1] === ring.at(-1)?.[1] ? ring.slice(0, -1) : ring;
+}
+
+function unwrapRing(ring: Position[], referenceLongitude?: number) {
+  const result: Position[] = [];
+  let previous = referenceLongitude;
+  for (const [longitude, latitude] of closeRemoved(ring)) {
+    let unwrapped = longitude;
+    if (previous !== undefined) while (unwrapped - previous > 180) unwrapped -= 360;
+    if (previous !== undefined) while (unwrapped - previous < -180) unwrapped += 360;
+    result.push([unwrapped, latitude]);
+    previous = unwrapped;
+  }
+  return result;
+}
+
+function surfaceVector(position: Position) {
+  const [x, y, z] = pointAt(position, GLOBE_RADIUS + 0.012);
+  return new Vector3(x, y, z);
+}
+
+function midpoint(a: Vector3, b: Vector3) {
+  return a.clone().add(b).normalize().multiplyScalar(GLOBE_RADIUS + 0.012);
+}
+
+function addSurfaceTriangle(vertices: number[], a: Vector3, b: Vector3, c: Vector3, depth = 2): void {
+  if (depth === 0) {
+    vertices.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+    return;
+  }
+  const ab = midpoint(a, b);
+  const bc = midpoint(b, c);
+  const ca = midpoint(c, a);
+  addSurfaceTriangle(vertices, a, ab, ca, depth - 1);
+  addSurfaceTriangle(vertices, ab, b, bc, depth - 1);
+  addSurfaceTriangle(vertices, ca, bc, c, depth - 1);
+  addSurfaceTriangle(vertices, ab, bc, ca, depth - 1);
+}
+
+function createLandGeometry(data: FeatureCollection) {
+  const vertices: number[] = [];
+  for (const feature of data.features) {
+    if (!feature.geometry) continue;
+    for (const polygon of polygons(feature.geometry)) {
+      const outer = unwrapRing(polygon[0] ?? []);
+      if (outer.length < 3) continue;
+      const holes = polygon.slice(1).map((ring) => unwrapRing(ring, outer[0][0])).filter((ring) => ring.length > 2);
+      const contour = outer.map(([longitude, latitude]) => new Vector2(longitude, latitude));
+      const holePoints = holes.map((ring) => ring.map(([longitude, latitude]) => new Vector2(longitude, latitude)));
+      const allPoints = [outer, ...holes].flat();
+      for (const [a, b, c] of ShapeUtils.triangulateShape(contour, holePoints)) addSurfaceTriangle(vertices, surfaceVector(allPoints[a]), surfaceVector(allPoints[b]), surfaceVector(allPoints[c]));
+    }
+  }
+  const geometry = new BufferGeometry();
+  geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function createBorderGeometry(data: FeatureCollection) {
+  const vertices: number[] = [];
+  for (const feature of data.features) {
+    if (!feature.geometry) continue;
+    for (const polygon of polygons(feature.geometry)) for (const ring of polygon) for (let index = 1; index < ring.length; index += 1) vertices.push(...pointAt(ring[index - 1], GLOBE_RADIUS + 0.021), ...pointAt(ring[index], GLOBE_RADIUS + 0.021));
+  }
+  const geometry = new BufferGeometry();
+  geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+  return geometry;
+}
 
 export function Globe({ children, isFocusingIndia }: GlobeProps) {
   const groupRef = useRef<Group>(null);
   const atmosphereRef = useRef<Mesh>(null);
   const pointsRef = useRef<Points>(null);
-
-  const earthTexture = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    const width = 1024;
-    const height = 512;
-    canvas.width = width;
-    canvas.height = height;
-
-    const context = canvas.getContext("2d");
-    if (!context) {
-      return null;
-    }
-
-    const oceanGradient = context.createLinearGradient(0, 0, width, height);
-    oceanGradient.addColorStop(0, "#041a2b");
-    oceanGradient.addColorStop(0.5, "#0a3161");
-    oceanGradient.addColorStop(1, "#062848");
-    context.fillStyle = oceanGradient;
-    context.fillRect(0, 0, width, height);
-
-    const drawLandMass = (
-      points: Array<[number, number]>,
-      baseColor: string,
-      shadeColor: string,
-      highlightColor: string
-    ) => {
-      context.beginPath();
-      context.moveTo(points[0][0], points[0][1]);
-      points.slice(1).forEach(([x, y]) => context.lineTo(x, y));
-      context.closePath();
-      context.fillStyle = baseColor;
-      context.fill();
-
-      context.save();
-      context.globalAlpha = 0.45;
-      context.fillStyle = shadeColor;
-      context.fill();
-      context.restore();
-
-      context.save();
-      context.globalAlpha = 0.2;
-      context.fillStyle = highlightColor;
-      context.fill();
-      context.restore();
-    };
-
-    drawLandMass(
-      [
-        [117, 154],
-        [188, 123],
-        [257, 136],
-        [290, 101],
-        [365, 141],
-        [442, 111],
-        [519, 140],
-        [584, 177],
-        [614, 218],
-        [573, 266],
-        [530, 313],
-        [470, 332],
-        [430, 365],
-        [332, 372],
-        [262, 344],
-        [206, 317],
-        [166, 275],
-        [121, 226]
-      ],
-      "#3d7d56",
-      "#264d3a",
-      "#7fb77f"
-    );
-
-    drawLandMass(
-      [
-        [610, 160],
-        [680, 151],
-        [744, 169],
-        [812, 154],
-        [879, 185],
-        [932, 206],
-        [973, 248],
-        [960, 295],
-        [913, 318],
-        [866, 347],
-        [794, 351],
-        [738, 333],
-        [674, 320],
-        [629, 290],
-        [597, 225]
-      ],
-      "#5a8d4b",
-      "#3e5d32",
-      "#b0c06d"
-    );
-
-    drawLandMass(
-      [
-        [717, 118],
-        [757, 103],
-        [792, 91],
-        [820, 106],
-        [852, 128],
-        [836, 154],
-        [811, 170],
-        [781, 163],
-        [742, 143]
-      ],
-      "#7a6842",
-      "#56452f",
-      "#d0b07d"
-    );
-
-    drawLandMass(
-      [
-        [952, 113],
-        [998, 131],
-        [1020, 157],
-        [1008, 195],
-        [968, 212],
-        [940, 182]
-      ],
-      "#7d6746",
-      "#56452f",
-      "#d7c294"
-    );
-
-    drawLandMass(
-      [
-        [792, 358],
-        [839, 351],
-        [892, 364],
-        [915, 387],
-        [889, 419],
-        [820, 425],
-        [770, 397]
-      ],
-      "#6f8b4b",
-      "#4c6035",
-      "#c0d48d"
-    );
-
-    context.fillStyle = "rgba(255,255,255,0.10)";
-    for (let i = 0; i < 26; i += 1) {
-      const x = Math.random() * width;
-      const y = Math.random() * height;
-      const w = 80 + Math.random() * 160;
-      const h = 12 + Math.random() * 50;
-      context.fillRect(x, y, w, h);
-    }
-
-    const texture = new CanvasTexture(canvas);
-    texture.colorSpace = SRGBColorSpace;
-    texture.needsUpdate = true;
-    return texture;
-  }, []);
-
-  useFrame((_, delta) => {
-    if (groupRef.current && !isFocusingIndia) {
-      groupRef.current.rotation.y += delta * 0.055;
-    }
-
-    if (atmosphereRef.current && !isFocusingIndia) {
-      atmosphereRef.current.rotation.y -= delta * 0.018;
-    }
-
-    if (pointsRef.current && !isFocusingIndia) {
-      pointsRef.current.rotation.y += delta * 0.012;
-    }
-  });
-
-  return (
-    <group ref={groupRef} rotation={[-0.12, -1.18, 0]} position={[0, -0.14, 0]}>
-      <mesh>
-        <sphereGeometry args={[GLOBE_RADIUS, 96, 96]} />
-        <meshStandardMaterial
-          map={earthTexture ?? undefined}
-          color="#dfe9f5"
-          roughness={0.92}
-          metalness={0.08}
-          emissive="#0c2141"
-          emissiveIntensity={0.28}
-        />
-      </mesh>
-
-      <mesh ref={atmosphereRef} scale={1.02}>
-        <sphereGeometry args={[GLOBE_RADIUS, 72, 72]} />
-        <meshBasicMaterial color="#96c9ff" transparent opacity={0.12} />
-      </mesh>
-
-      <mesh>
-        <sphereGeometry args={[GLOBE_RADIUS + 0.06, 72, 72]} />
-        <meshBasicMaterial color="#7db8ff" transparent opacity={0.04} />
-      </mesh>
-
-      <points ref={pointsRef}>
-        <sphereGeometry args={[GLOBE_RADIUS + 0.08, 34, 34]} />
-        <pointsMaterial color="#8aa9c7" size={0.0068} transparent opacity={0.18} />
-      </points>
-
-      {children}
-    </group>
-  );
+  const [geography, setGeography] = useState<FeatureCollection | null>(null);
+  useEffect(() => { fetch("/geodata/natural-earth-countries.geojson").then((response) => response.ok ? response.json() : null).then((data: FeatureCollection | null) => setGeography(data)).catch(() => setGeography(null)); }, []);
+  const landGeometry = useMemo(() => geography ? createLandGeometry(geography) : null, [geography]);
+  const borderGeometry = useMemo(() => geography ? createBorderGeometry(geography) : null, [geography]);
+  useFrame((_, delta) => { if (groupRef.current && !isFocusingIndia) groupRef.current.rotation.y += delta * 0.055; if (atmosphereRef.current && !isFocusingIndia) atmosphereRef.current.rotation.y -= delta * 0.018; if (pointsRef.current && !isFocusingIndia) pointsRef.current.rotation.y += delta * 0.012; });
+  return <group ref={groupRef} rotation={[-0.12, INDIA_FOCUS_GROUP_ROTATION_Y, 0]} position={[0, -0.14, 0]}>
+    <mesh><sphereGeometry args={[GLOBE_RADIUS, 96, 64]} /><meshStandardMaterial color="#3bb6db" roughness={0.64} metalness={0.04} emissive="#218fb9" emissiveIntensity={0.12} /></mesh>
+    {landGeometry ? <mesh geometry={landGeometry}><meshStandardMaterial color="#9dca73" roughness={0.88} metalness={0} side={DoubleSide} /></mesh> : null}
+    {borderGeometry ? <lineSegments geometry={borderGeometry}><lineBasicMaterial color="#5f864f" transparent opacity={0.42} /></lineSegments> : null}
+    <mesh ref={atmosphereRef} scale={1.025}><sphereGeometry args={[GLOBE_RADIUS, 72, 72]} /><meshBasicMaterial color="#e4f9ff" transparent opacity={0.16} /></mesh>
+    <points ref={pointsRef}><sphereGeometry args={[GLOBE_RADIUS + 0.08, 34, 34]} /><pointsMaterial color="#ffffff" size={0.0068} transparent opacity={0.1} /></points>
+    {children}
+  </group>;
 }

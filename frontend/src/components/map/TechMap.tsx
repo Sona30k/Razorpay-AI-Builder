@@ -8,7 +8,6 @@ import { CityInfo } from "@/components/map/CityInfo";
 import { CityMarkers } from "@/components/map/CityMarkers";
 import { CityView } from "@/components/map/CityView";
 import { Globe } from "@/components/map/Globe";
-import { IndiaOutline } from "@/components/map/IndiaOutline";
 import { StarField } from "@/components/map/StarField";
 import { TECH_CITIES } from "@/lib/cities";
 import { CompanyPanel } from "@/components/company/CompanyPanel";
@@ -106,8 +105,8 @@ export function TechMap() {
         dpr={[1, 1.65]}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       >
-        <color attach="background" args={["#050608"]} />
-        <fog attach="fog" args={["#050608", 7, 13]} />
+        <color attach="background" args={[cityMode ? "#b9ced9" : "#b9e3f4"]} />
+        <fog attach="fog" args={[cityMode ? "#b9ced9" : "#b9e3f4", cityMode ? 12 : 10, cityMode ? 32 : 28]} />
 
         <CameraController
           controlsEnabled={controlsEnabled}
@@ -118,15 +117,15 @@ export function TechMap() {
           cityMode={cityMode}
         />
 
-        <ambientLight intensity={0.36} />
-        <directionalLight position={[4.5, 3.2, 5]} intensity={1.45} color="#e7f0ff" />
-        <pointLight position={[-3, -1.2, 2.4]} intensity={1.45} color="#2d8cff" />
-        <pointLight position={[2, 1.4, -3]} intensity={0.75} color="#72f3ff" />
+        <ambientLight intensity={cityMode ? 0.95 : 1.15} />
+        <hemisphereLight args={["#f6fbff", cityMode ? "#95aab3" : "#dbe5ad", cityMode ? 0.52 : 0.75]} />
+        <directionalLight position={[4.5, 6.2, 5]} intensity={cityMode ? 1.45 : 1.8} color="#ffffff" />
+        <pointLight position={[-3, -1.2, 2.4]} intensity={cityMode ? 0.32 : 0.9} color="#ffffff" />
+        <pointLight position={[2, 1.4, -3]} intensity={cityMode ? 0.18 : 0.45} color="#72f3ff" />
 
-        <StarField />
+        {cityMode ? <StarField /> : null}
         {!cityMode ? (
           <Globe isFocusingIndia={focusProgress > 0 || controlsEnabled}>
-            <IndiaOutline focusProgress={focusProgress} />
             <CityMarkers
               selectedCityId={selectedCityId}
               onSelectCity={selectCity}
@@ -138,7 +137,7 @@ export function TechMap() {
         ) : null}
       </Canvas>
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between px-5 py-5 text-white sm:px-8 sm:py-7">
+      <div className={`pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between bg-gradient-to-b px-5 py-5 sm:px-8 sm:py-7 ${cityMode ? "from-slate-950/45 to-transparent text-white" : "from-white/60 to-transparent text-slate-900"}`}>
         <div>
           <p className="text-base font-semibold tracking-[0.18em] sm:text-xl sm:tracking-[0.2em]">TECHATLAS</p>
           {selectedCity ? (
@@ -147,12 +146,12 @@ export function TechMap() {
               <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-sky-200">Technology Hub</p>
             </>
           ) : (
-            <p className="mt-1.5 max-w-[15rem] text-[10px] uppercase tracking-[0.18em] text-slate-400 sm:mt-2 sm:max-w-sm sm:text-sm sm:tracking-[0.24em]">
+            <p className="mt-1.5 max-w-[15rem] text-[10px] uppercase tracking-[0.18em] text-slate-600 sm:mt-2 sm:max-w-sm sm:text-sm sm:tracking-[0.24em]">
               India&apos;s technology ecosystem
             </p>
           )}
         </div>
-        <div className="flex items-center gap-3"><p className="hidden text-xs uppercase tracking-[0.24em] text-slate-500 sm:block">India focus sequence</p><ThemeToggle /></div>
+        <div className="flex items-center gap-3"><p className={`hidden text-xs uppercase tracking-[0.24em] sm:block ${cityMode ? "text-slate-500" : "text-slate-600"}`}>India focus sequence</p><ThemeToggle /></div>
       </div>
 
       {!cityMode ? <div className="pointer-events-none absolute inset-x-3 bottom-4 flex justify-center sm:inset-y-0 sm:right-6 sm:left-auto sm:items-center sm:pr-0 lg:right-8">
@@ -191,8 +190,8 @@ export function TechMap() {
 
       {/* Company search + panel when a city is selected */}
       {selectedCity ? (
-        <div className="pointer-events-auto absolute left-1/2 top-5 -translate-x-1/2 w-[min(40rem,92%)]">
-          <div className="theme-surface mx-auto w-full max-w-3xl rounded-lg border border-white/8 bg-slate-950/60 p-2.5 backdrop-blur-md">
+        <div className="pointer-events-auto absolute left-1/2 top-4 w-[min(38rem,calc(100%-11rem))] -translate-x-1/2 sm:top-5 sm:w-[min(40rem,60%)]">
+          <div className="theme-surface mx-auto w-full rounded-lg border border-white/8 bg-slate-950/70 p-2 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,.2)]">
             <div className="flex items-center gap-3">
               <input
                 value={search}
@@ -206,21 +205,21 @@ export function TechMap() {
         </div>
       ) : null}
 
-      {selectedCompany && !aiCompany ? <CompanyPanel company={selectedCompany} onClose={() => setSelectedCompany(null)} onExploreAI={() => setAiCompany(selectedCompany)} /> : null}
+      {selectedCompany ? <CompanyPanel company={selectedCompany} hasAnalysis={Boolean(aiCompany)} onClose={() => { setSelectedCompany(null); setAiCompany(null); }} onExploreAI={() => setAiCompany(selectedCompany)} /> : null}
       {aiCompany ? <AIGrowthPanel company={aiCompany} onClose={() => setAiCompany(null)} /> : null}
       {!cityMode ? <CityInfo city={selectedCity} /> : null}
-      {selectedCity && !selectedCompany && !aiCompany ? (
-        <div className="theme-surface pointer-events-auto absolute right-5 bottom-16 w-64 max-h-80 overflow-auto rounded-lg border border-white/6 bg-slate-950/60 p-2 backdrop-blur-md">
-          <p className="text-xs text-slate-400">Companies in {selectedCity.name}</p>
+      {selectedCity ? (
+        <div className="theme-surface pointer-events-auto absolute bottom-16 left-5 z-10 max-h-72 w-[min(13.5rem,calc(100%-2.5rem))] overflow-auto rounded-lg border border-white/6 bg-slate-950/80 p-2.5 shadow-[0_12px_36px_rgba(0,0,0,.22)] backdrop-blur-md sm:bottom-auto sm:left-8 sm:top-32">
+          <p className="px-1 text-[10px] font-medium uppercase tracking-[.14em] text-slate-400">Companies in {selectedCity.name}</p>
           {cityCompanyStats && cityCompanyStats.mappable !== cityCompanyStats.total ? (
             <p className="mt-0.5 text-[10px] text-slate-500">{cityCompanyStats.mappable} mapped in this city view</p>
           ) : null}
-          <ul className="mt-2 space-y-1">
+          <ul className="mt-2 space-y-0.5">
             {mappedCompanies.map((c) => (
               <li key={c.id}>
                 <button
                   onClick={() => selectCompany(c)}
-                  className="w-full text-left text-sm text-slate-200 hover:text-white"
+                  className="w-full rounded px-1.5 py-1 text-left text-sm text-slate-200 transition hover:bg-sky-400/10 hover:text-white"
                 >
                   {c.name} <span className="text-xs text-slate-500">· {c.category}</span>
                 </button>

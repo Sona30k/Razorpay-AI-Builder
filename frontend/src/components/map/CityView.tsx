@@ -9,10 +9,13 @@ type CityViewProps = { city: City; companies?: Company[]; onSelectCompany?: (com
 
 export function CityView({ city, companies = [], onSelectCompany, selectedCompanyId }: CityViewProps) {
   return <group>
-    <ambientLight intensity={0.68} color="#c9def5" />
-    <directionalLight position={[7, 10, 4]} intensity={2.1} color="#d9ecff" castShadow />
-    <pointLight position={[-5, 6, -4]} intensity={12} distance={20} color="#287da5" />
-    <fog attach="fog" args={["#05080d", 14, 48]} />
+    {/* stronger, cleaner lighting for city overview */}
+    <ambientLight intensity={1.15} color="#f4f8fb" />
+    <hemisphereLight args={["#ffffff", "#9eafb6", 0.64]} />
+    <directionalLight position={[7, 10, 4]} intensity={2.05} color="#ffffff" castShadow />
+    <directionalLight position={[-4, 6, -3]} intensity={0.55} color="#f5dfbf" />
+    <pointLight position={[-5, 6, -4]} intensity={0.42} distance={20} color="#ffffff" />
+    <fog attach="fog" args={["#b9ced9", 12, 36]} />
     <ProceduralCity city={city} />
     <CompanyMarkers companies={companies} latitude={city.lat} longitude={city.lon} onSelectCompany={onSelectCompany} selectedCompanyId={selectedCompanyId} />
   </group>;

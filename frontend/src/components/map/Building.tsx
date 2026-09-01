@@ -59,7 +59,7 @@ export function Building({ building, cityLatitude, cityLongitude, selected, onSe
   });
 
   const shade = (Number.parseInt(building.id.replace(/\D/g, ""), 10) || 0) % 3;
-  const baseColor = ["#55758d", "#66879f", "#7898ac"][shade];
+  const baseColor = ["#e9eef2", "#dfeef8", "#cfe6f0"][shade];
 
   return (
     <mesh
@@ -81,11 +81,11 @@ export function Building({ building, cityLatitude, cityLongitude, selected, onSe
       }}
     >
       <meshStandardMaterial
-        color={new Color(selected ? "#4a6f8d" : hovered ? "#36526b" : baseColor)}
-        emissive={selected || hovered ? "#2d6d95" : "#234a65"}
-        emissiveIntensity={selected ? 0.65 : hovered ? 0.4 : 0.38}
-        roughness={0.75}
-        metalness={0.24}
+        color={new Color(selected ? "#d7eefc" : hovered ? "#e2f2fa" : baseColor)}
+        emissive={selected || hovered ? "#f0fbff" : "#eef7ff"}
+        emissiveIntensity={selected ? 0.45 : hovered ? 0.18 : 0.06}
+        roughness={0.42}
+        metalness={0.08}
       />
     </mesh>
   );

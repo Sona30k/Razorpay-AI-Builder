@@ -27,7 +27,7 @@ export function GrowthPlanner({ company, analysis, onBack }: Props) {
   useEffect(() => { void load(); }, []);
 
   if (selectedAction) return <ActionCenter company={company} action={selectedAction} onBack={() => setSelectedAction(null)} />;
-  return <aside className="theme-surface pointer-events-auto absolute right-5 top-12 z-30 max-h-[calc(100%-4rem)] w-[min(29rem,calc(100%-2.5rem))] overflow-y-auto rounded-lg border border-sky-200/15 bg-slate-950/95 p-5 shadow-[0_20px_60px_rgba(0,0,0,.55)]">
+  return <aside className="theme-surface pointer-events-auto absolute inset-x-4 top-16 bottom-4 z-30 max-h-none overflow-y-auto rounded-lg border border-sky-200/15 bg-slate-950/95 p-4 shadow-[0_20px_60px_rgba(0,0,0,.55)] lg:inset-x-auto lg:right-5 lg:top-12 lg:bottom-auto lg:max-h-[calc(100%-4rem)] lg:w-[min(29rem,calc(100%-2.5rem))] lg:p-5">
     <button type="button" onClick={onBack} className="mb-4 text-xs text-sky-200">← Back to Analysis</button>
     <p className="text-[10px] tracking-[.18em] text-sky-300">AI GROWTH PLAN {demo ? <span className="ml-2 text-sky-200">DEMO MODE</span> : null}</p>
     <p className="mt-2 text-lg font-semibold text-white">{company.name}</p>

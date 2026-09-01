@@ -151,7 +151,7 @@ export function CameraController({
 
   return (
     <>
-      <PerspectiveCamera makeDefault position={[0, 0.42, 7.4]} fov={44} />
+      <PerspectiveCamera makeDefault position={[0, 0.36, 5.8]} fov={42} />
       <OrbitControls
         ref={controlsRef}
         enabled={controlsEnabled}

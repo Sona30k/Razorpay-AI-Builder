@@ -11,6 +11,15 @@ export type GrowthAnalysis = {
 
 const levels = new Set(["Low", "Medium", "High"]);
 
+export function normalizeGrowthAnalysis(value: unknown): unknown {
+  if (!value || typeof value !== "object") return value;
+  const analysis = value as Record<string, unknown>;
+  const normalized = { ...analysis };
+  if (Array.isArray(normalized.expectedImpact) && normalized.expectedImpact.every((item) => typeof item === "string")) normalized.expectedImpact = normalized.expectedImpact.join(" ");
+  if (typeof normalized.kpis === "string" && normalized.kpis.trim()) normalized.kpis = [normalized.kpis];
+  return normalized;
+}
+
 export function isGrowthAnalysis(value: unknown): value is GrowthAnalysis {
   if (!value || typeof value !== "object") return false;
   const analysis = value as Record<string, unknown>;

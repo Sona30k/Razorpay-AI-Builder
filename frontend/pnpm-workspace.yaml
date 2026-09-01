@@ -1,2 +1,6 @@
 allowBuilds:
+  '@google/genai': set this to true or false
+  protobufjs: set this to true or false
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@google/genai@2.20.0'
