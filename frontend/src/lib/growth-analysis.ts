@@ -19,3 +19,21 @@ export function isGrowthAnalysis(value: unknown): value is GrowthAnalysis {
     && typeof analysis.priority === "string" && levels.has(analysis.priority)
     && Array.isArray(analysis.kpis) && analysis.kpis.length > 0 && analysis.kpis.every((kpi) => typeof kpi === "string");
 }
+
+export type GrowthPlan = {
+  goal: string;
+  strategy: string;
+  expectedOutcome: string;
+  actions: Array<{ title: string; description: string; priority: "Low" | "Medium" | "High"; timeline: string; kpi: string; expectedOutcome: string }>;
+  risks: string[];
+};
+
+export type GrowthPlanAction = GrowthPlan["actions"][number];
+
+export function isGrowthPlan(value: unknown): value is GrowthPlan {
+  if (!value || typeof value !== "object") return false;
+  const plan = value as Record<string, unknown>;
+  return typeof plan.goal === "string" && typeof plan.strategy === "string" && typeof plan.expectedOutcome === "string" && Array.isArray(plan.risks)
+    && Array.isArray(plan.actions) && plan.actions.length >= 4 && plan.actions.length <= 6
+    && plan.actions.every((action) => action && typeof action === "object" && ["title", "description", "timeline", "kpi", "expectedOutcome"].every((key) => typeof (action as Record<string, unknown>)[key] === "string") && levels.has((action as Record<string, unknown>).priority as string));
+}

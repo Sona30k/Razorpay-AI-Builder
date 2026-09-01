@@ -81,7 +81,7 @@ export function CameraController({
       const progress = Math.min((clock.elapsedTime - transition.startedAt) / 1.65, 1);
       const eased = easeInOutCubic(progress);
       const destinationTarget = cityMode ? new Vector3(0, 0.28, 0) : positions.lookAt;
-      const destination = cityMode ? destinationTarget.clone().add(new Vector3(6.4, 5.6, 7.2)) : positions.end;
+      const destination = cityMode ? destinationTarget.clone().add(new Vector3(11, 9.6, 11)) : positions.end;
 
       camera.position.copy(transition.from.clone().lerp(destination, eased));
       controlsRef.current?.target.copy(transition.fromTarget.clone().lerp(destinationTarget, eased));
@@ -151,19 +151,19 @@ export function CameraController({
 
   return (
     <>
-      <PerspectiveCamera makeDefault position={[0, 0.42, 7.4]} fov={38} />
+      <PerspectiveCamera makeDefault position={[0, 0.42, 7.4]} fov={44} />
       <OrbitControls
         ref={controlsRef}
         enabled={controlsEnabled}
         enableDamping
         dampingFactor={0.08}
         enablePan={cityMode}
-        minDistance={cityMode ? 4.2 : 5.8}
-        maxDistance={cityMode ? 18 : 11}
+        minDistance={cityMode ? 7 : 5.8}
+        maxDistance={cityMode ? 28 : 11}
         rotateSpeed={0.42}
         zoomSpeed={0.62}
         minPolarAngle={0.25}
-        maxPolarAngle={Math.PI - 0.15}
+        maxPolarAngle={cityMode ? 1.48 : Math.PI - 0.15}
       />
     </>
   );

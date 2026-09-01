@@ -13,6 +13,7 @@ import { StarField } from "@/components/map/StarField";
 import { TECH_CITIES } from "@/lib/cities";
 import { CompanyPanel } from "@/components/company/CompanyPanel";
 import { AIGrowthPanel } from "@/components/company/AIGrowthPanel";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { companyDiagnostics, filterCompanies, isNearCity } from "@/lib/companies";
 import type { Company } from "@/types/company";
 import {
@@ -56,17 +57,17 @@ export function TechMap() {
     () => selectedCity ? companyDiagnostics(companies, selectedCity.id, selectedCity.lat, selectedCity.lon) : null,
     [companies, selectedCity]
   );
-  useEffect(() => {
-    if (selectedCity && cityCompanyStats) {
-      console.info("COMPANY DATA LOADED", {
-        city: selectedCity.name,
-        total: cityCompanyStats.total,
-        withCoordinates: cityCompanyStats.withCoordinates,
-        mappable: cityCompanyStats.mappable,
-        outsideCityArea: cityCompanyStats.outsideCityArea
-      });
-    }
-  }, [cityCompanyStats, selectedCity]);
+  const selectCity = (cityId: string | null) => {
+    setSelectedCityId(cityId);
+    setSelectedCompany(null);
+    setAiCompany(null);
+    setSearch("");
+  };
+
+  const selectCompany = (company: Company | null) => {
+    setSelectedCompany(company);
+    setAiCompany(null);
+  };
 
   const cityFocusTarget = useMemo(() => {
     if (!selectedCity) {
@@ -128,12 +129,12 @@ export function TechMap() {
             <IndiaOutline focusProgress={focusProgress} />
             <CityMarkers
               selectedCityId={selectedCityId}
-              onSelectCity={setSelectedCityId}
+              onSelectCity={selectCity}
             />
           </Globe>
         ) : null}
         {selectedCity ? (
-          <CityView city={selectedCity} companies={mappedCompanies} onSelectCompany={(c) => setSelectedCompany(c)} selectedCompanyId={selectedCompany?.id ?? null} />
+          <CityView city={selectedCity} companies={mappedCompanies} onSelectCompany={selectCompany} selectedCompanyId={selectedCompany?.id ?? null} />
         ) : null}
       </Canvas>
 
@@ -151,13 +152,11 @@ export function TechMap() {
             </p>
           )}
         </div>
-        <p className="hidden text-xs uppercase tracking-[0.24em] text-slate-500 sm:block">
-          India focus sequence
-        </p>
+        <div className="flex items-center gap-3"><p className="hidden text-xs uppercase tracking-[0.24em] text-slate-500 sm:block">India focus sequence</p><ThemeToggle /></div>
       </div>
 
       {!cityMode ? <div className="pointer-events-none absolute inset-x-3 bottom-4 flex justify-center sm:inset-y-0 sm:right-6 sm:left-auto sm:items-center sm:pr-0 lg:right-8">
-        <div className="pointer-events-auto w-full max-w-[22rem] rounded-lg border border-white/10 bg-slate-950/60 p-2.5 shadow-[0_0_24px_rgba(37,99,235,0.12)] backdrop-blur-md sm:w-44 sm:max-w-none sm:p-3 lg:w-48">
+        <div className="theme-surface pointer-events-auto w-full max-w-[22rem] rounded-lg border border-white/10 bg-slate-950/60 p-2.5 shadow-[0_0_24px_rgba(37,99,235,0.12)] backdrop-blur-md sm:w-44 sm:max-w-none sm:p-3 lg:w-48">
           <p className="px-1 text-[9px] font-medium uppercase tracking-[0.22em] text-slate-400 sm:text-[10px] sm:tracking-[0.26em]">
             Tech Cities
           </p>
@@ -166,7 +165,7 @@ export function TechMap() {
               <button
                 key={city.id}
                 type="button"
-                onClick={() => setSelectedCityId(city.id)}
+                onClick={() => selectCity(city.id)}
                 className={`flex min-w-0 items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-left text-xs leading-5 transition-all duration-200 sm:py-1.5 sm:text-sm ${selectedCityId === city.id
                   ? "border-sky-400/60 bg-sky-500/10 text-sky-100 shadow-[0_0_16px_rgba(56,189,248,0.2)]"
                   : "border-white/5 bg-white/[0.02] text-slate-200 hover:border-sky-400/40 hover:bg-sky-500/5"
@@ -183,8 +182,8 @@ export function TechMap() {
       {selectedCity ? (
         <button
           type="button"
-          onClick={() => { setSelectedCityId(null); setSelectedCompany(null); }}
-          className="absolute bottom-5 left-5 rounded-md border border-white/15 bg-slate-950/75 px-3 py-2 text-xs font-medium text-slate-200 backdrop-blur-md transition hover:border-sky-300/50 hover:text-white sm:bottom-7 sm:left-8"
+          onClick={() => selectCity(null)}
+          className="theme-surface absolute bottom-5 left-5 rounded-md border border-white/15 bg-slate-950/75 px-3 py-2 text-xs font-medium text-slate-200 backdrop-blur-md transition hover:border-sky-300/50 hover:text-white sm:bottom-7 sm:left-8"
         >
           ← India
         </button>
@@ -193,7 +192,7 @@ export function TechMap() {
       {/* Company search + panel when a city is selected */}
       {selectedCity ? (
         <div className="pointer-events-auto absolute left-1/2 top-5 -translate-x-1/2 w-[min(40rem,92%)]">
-          <div className="mx-auto w-full max-w-3xl rounded-lg border border-white/8 bg-slate-950/60 p-2.5 backdrop-blur-md">
+          <div className="theme-surface mx-auto w-full max-w-3xl rounded-lg border border-white/8 bg-slate-950/60 p-2.5 backdrop-blur-md">
             <div className="flex items-center gap-3">
               <input
                 value={search}
@@ -207,12 +206,11 @@ export function TechMap() {
         </div>
       ) : null}
 
-      {selectedCompany ? <CompanyPanel company={selectedCompany} onClose={() => setSelectedCompany(null)} onExploreAI={() => setAiCompany(selectedCompany)} /> : null}
+      {selectedCompany && !aiCompany ? <CompanyPanel company={selectedCompany} onClose={() => setSelectedCompany(null)} onExploreAI={() => setAiCompany(selectedCompany)} /> : null}
       {aiCompany ? <AIGrowthPanel company={aiCompany} onClose={() => setAiCompany(null)} /> : null}
       {!cityMode ? <CityInfo city={selectedCity} /> : null}
-      {/* Dev-accessible company list for clicking companies without canvas interaction */}
-      {selectedCity ? (
-        <div className="pointer-events-auto absolute right-5 bottom-16 w-64 max-h-80 overflow-auto rounded-lg border border-white/6 bg-slate-950/60 p-2 backdrop-blur-md">
+      {selectedCity && !selectedCompany && !aiCompany ? (
+        <div className="theme-surface pointer-events-auto absolute right-5 bottom-16 w-64 max-h-80 overflow-auto rounded-lg border border-white/6 bg-slate-950/60 p-2 backdrop-blur-md">
           <p className="text-xs text-slate-400">Companies in {selectedCity.name}</p>
           {cityCompanyStats && cityCompanyStats.mappable !== cityCompanyStats.total ? (
             <p className="mt-0.5 text-[10px] text-slate-500">{cityCompanyStats.mappable} mapped in this city view</p>
@@ -221,7 +219,7 @@ export function TechMap() {
             {mappedCompanies.map((c) => (
               <li key={c.id}>
                 <button
-                  onClick={() => setSelectedCompany(c)}
+                  onClick={() => selectCompany(c)}
                   className="w-full text-left text-sm text-slate-200 hover:text-white"
                 >
                   {c.name} <span className="text-xs text-slate-500">· {c.category}</span>

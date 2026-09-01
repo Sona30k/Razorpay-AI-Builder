@@ -7,6 +7,11 @@
   background: #050608;
 }
 
+:root[data-theme="light"] {
+  color-scheme: light;
+  background: #edf4fa;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -21,6 +26,45 @@ body {
     radial-gradient(circle at 50% 18%, rgba(106, 168, 255, 0.16), transparent 30rem),
     linear-gradient(145deg, #050608 0%, #0c1016 48%, #050608 100%);
   color: #f7fbff;
+}
+
+:root[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(55, 148, 220, 0.16), transparent 30rem),
+    linear-gradient(145deg, #eef5fa 0%, #dceaf3 48%, #f8fbfd 100%);
+  color: #102033;
+}
+
+:root[data-theme="light"] .atlas-bg {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(40, 151, 205, 0.12), transparent 24rem),
+    linear-gradient(145deg, #edf5fa 0%, #dceaf4 52%, #f8fbfd 100%);
+}
+
+:root[data-theme="light"] .theme-surface {
+  background: rgba(248, 252, 255, 0.94) !important;
+  border-color: rgba(51, 98, 132, 0.22) !important;
+  color: #102033;
+  box-shadow: 0 16px 42px rgba(22, 67, 99, 0.18);
+}
+
+:root[data-theme="light"] .theme-surface .text-white,
+:root[data-theme="light"] .theme-surface .text-slate-100,
+:root[data-theme="light"] .theme-surface .text-slate-200 {
+  color: #102033;
+}
+
+:root[data-theme="light"] .theme-surface .text-slate-300,
+:root[data-theme="light"] .theme-surface .text-slate-400,
+:root[data-theme="light"] .theme-surface .text-slate-500 {
+  color: #4b6478;
+}
+
+:root[data-theme="light"] .theme-surface .border-white\/10,
+:root[data-theme="light"] .theme-surface .border-white\/15,
+:root[data-theme="light"] .theme-surface .border-white\/8,
+:root[data-theme="light"] .theme-surface .border-white\/6 {
+  border-color: rgba(51, 98, 132, 0.18);
 }
 
 body {

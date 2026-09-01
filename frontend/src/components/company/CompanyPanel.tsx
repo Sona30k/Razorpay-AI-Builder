@@ -22,7 +22,7 @@ export function CompanyPanel({ company, onClose, onExploreAI }: Props) {
         .join(" · ");
 
     return (
-        <aside className="pointer-events-auto absolute left-5 top-28 z-10 w-[min(22rem,calc(100%-2.5rem))] rounded-lg border border-white/10 bg-slate-950/85 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.38)] backdrop-blur-md text-slate-100 sm:left-8 sm:top-32">
+        <aside className="theme-surface pointer-events-auto absolute left-5 top-28 z-10 max-h-[calc(100%-9rem)] w-[min(22rem,calc(100%-2.5rem))] overflow-y-auto rounded-lg border border-white/10 bg-slate-950/85 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.38)] backdrop-blur-md text-slate-100 sm:left-8 sm:top-32">
             <div className="flex items-start justify-between gap-3">
                 <div>
                     <p className="text-base font-semibold tracking-wide">{company.name}</p>
