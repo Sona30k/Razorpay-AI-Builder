@@ -1,285 +1,135 @@
 # TechAtlas AI
 
-TechAtlas AI is a 3D, AI-native map of India's technology ecosystem where users can discover companies, explore products, receive AI recommendations, approve purchases, and complete payments through Razorpay Test Mode.
-
-The project combines geospatial company discovery, AI-assisted commerce, merchant growth intelligence, and auditable payment workflows into one connected demo experience.
-
-## Core Idea
-
-Most company directories treat businesses as static database entries. TechAtlas AI places companies at their real-world locations on a 3D representation of Indian cities, allowing users to explore the Indian technology ecosystem geographically.
-
-Users can move through:
+TechAtlas AI is an interactive 3D map of India's technology ecosystem. It combines a real-geography Earth view, city-scale visualizations, company discovery, and local AI-assisted growth workflows.
 
 ```text
-India -> City -> Technology cluster -> Building -> Company -> Product -> Transaction
+Earth -> City -> Company -> Growth Analysis -> Risk Analysis / Growth Plan -> Action Center
 ```
 
-An AI agent sits on top of this map and helps users discover, compare, and purchase relevant products or services.
+## What Works Today
 
-## Demo Scenario
+- Real Natural Earth country geometry rendered locally on a Three.js globe.
+- Geographic markers for Bengaluru, Hyderabad, Pune, Gurugram, and Delhi.
+- Interactive city views with visible buildings, roads, parks, water, and company markers.
+- Searchable company data by city, company name, category, and industry.
+- Company details, AI Growth Analysis, Risk Analysis, Growth Planner, and Action Center.
+- Local Ollama-powered AI with a deterministic `MOCK_AI_MODE` fallback.
+- Demo-only commerce actions. No real payment provider or money transfer is used.
+- Light and dark UI modes.
 
-The main demo can follow this user journey:
+## Product Flow
+
+### Real Earth View
+
+The landing globe uses the bundled Natural Earth country-boundary dataset in `frontend/public/geodata/`. Land, coastlines, country borders, and the five city positions are derived from geographic coordinates.
+
+### City And Company Discovery
+
+Selecting a city opens a stylized city scene. Buildings, roads, parks, and water are visual layers for orientation; company markers use the local company dataset.
 
 ```text
-User: "I am a startup founder in Bengaluru looking for an HR product under Rs.10,000."
-
-AI Buyer
-  -> Understands the requirement
-  -> Searches the company and product catalog
-  -> Compares available options
-  -> Explains the recommendation
-  -> Shows the company on the 3D map
-  -> Requests explicit user approval
-  -> Starts Razorpay Test Mode payment
-  -> Handles success or failure
-  -> Records the full audit trail
+Company list -> Company details -> Explore with AI
 ```
 
-## Product Pillars
+On desktop, the company list, company details, and analysis occupy separate columns. Smaller screens use focused scrollable panels to prevent overlap.
 
-### 1. 3D Tech Ecosystem Map
+### Growth Workflows
 
-The map is the visual core of the product.
+Growth Analysis uses the selected company's available fields to return structured opportunity, segment, strategy, impact, priority, and KPI data. Users can then:
 
-Users can explore Indian technology hubs geographically and inspect companies based on city, cluster, building, category, and product offering.
+- Analyze estimated business risks.
+- Build a four-action growth plan.
+- Mark execution-plan actions complete.
+- Open a demo Action Center for a selected action.
 
-Example:
+Risk output is a TechAtlas estimate based on available information. It is not a financial, credit, legal, or investment rating.
+
+## Local Setup
+
+### Requirements
+
+- Node.js 20+
+- Ollama
+- A downloaded local model, currently `qwen2.5:0.5b`
+
+### Run Ollama
+
+```bash
+ollama serve
+ollama pull qwen2.5:0.5b
+```
+
+### Configure Environment
+
+Create `frontend/.env.local` from `frontend/.env.example`.
+
+```env
+MOCK_AI_MODE=false
+MOCK_COMMERCE_MODE=true
+OLLAMA_MODEL=qwen2.5:0.5b
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+```
+
+Set `MOCK_AI_MODE=true` to use deterministic development analysis, risk, and planning responses without calling Ollama.
+
+### Start The App
+
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+### Production Build
+
+```bash
+cd frontend
+pnpm build
+```
+
+## API Routes
+
+| Route | Purpose |
+| --- | --- |
+| `POST /api/ai/growth` | Company-specific structured growth analysis. |
+| `POST /api/ai/risk` | Structured estimated risk analysis. |
+| `POST /api/ai/growth-plan` | Structured four-action growth plan. |
+| `POST /api/commerce/action` | Deterministic demo Action Center result. |
+| `GET /api/city-data` | Static city geography data. |
+| `GET /api/buildings` | Building data endpoint. |
+
+## Project Structure
 
 ```text
-India
-  -> Bengaluru
-  -> Koramangala
-  -> TechStore Demo
-  -> Product Catalog
+frontend/
+  public/
+    company-data/        # Company dataset
+    city-data/           # Static city datasets
+    geodata/             # Bundled Natural Earth geography
+  src/
+    app/api/             # AI, city, building, and demo-commerce endpoints
+    components/map/      # Globe, city view, company markers, controls
+    components/company/  # Details, analysis, risk, plan, action center
+    lib/                 # Geographic, company, AI-provider helpers
 ```
 
-### 2. AI Buyer Agent
+## Technology
 
-The AI Buyer Agent helps users find suitable products based on natural language needs.
-
-Example:
-
-```text
-User: "I need something for my work-from-home setup under Rs.5,000."
-```
-
-The agent can:
-
-- Understand user requirements
-- Search the product catalog
-- Compare products
-- Check budget constraints
-- Recommend suitable items
-- Explain why the recommendation fits
-- Ask for user approval before payment
-
-### 3. Simulated Merchant Store
-
-The project includes a small demo merchant storefront called **TechStore Demo**.
-
-Sample products:
-
-| Product | Price |
-| --- | ---: |
-| Laptop Stand | Rs.2,499 |
-| Mechanical Keyboard | Rs.3,499 |
-| Wireless Mouse | Rs.1,499 |
-| Monitor | Rs.12,999 |
-| USB-C Hub | Rs.2,999 |
-| Webcam | Rs.4,999 |
-
-Each product should contain:
-
-- Product ID
-- Name
-- Description
-- Price
-- Category
-- Features
-- Stock
-- Complementary products
-- Target customer
-
-This merchant is not separate from the map. It should be discoverable as a company inside TechAtlas AI.
-
-### 4. Commerce Flow
-
-The commerce journey follows:
-
-```text
-Understand -> Discover -> Compare -> Recommend -> Approve -> Pay
-```
-
-The AI can recommend products, build a cart, and prepare a purchase request. However, it must never charge the user automatically.
-
-Every payment action must follow:
-
-```text
-AI recommendation
-  -> Show amount
-  -> Explain reason
-  -> Check spending limit
-  -> User approval
-  -> Razorpay Test Mode checkout
-```
-
-### 5. Razorpay Test Payment
-
-The payment flow should use Razorpay Test Mode.
-
-Important payment rules:
-
-- Razorpay credentials must stay on the backend.
-- The backend creates Razorpay orders.
-- The backend verifies payments before marking orders as paid.
-- The frontend should never expose secret keys.
-- Failed payments should trigger recovery options.
-
-### 6. AI Growth Agent for Merchants
-
-TechAtlas AI also includes a merchant-side AI Growth Agent.
-
-The agent analyzes sample merchant data such as:
-
-- Revenue
-- Orders
-- Conversion rate
-- Average order value
-- Product views
-- Purchase patterns
-- Cart behavior
-- Product combinations
-
-It can identify:
-
-- Upsell opportunities
-- Cross-sell opportunities
-- Product improvement opportunities
-- Campaign opportunities
-
-Example:
-
-```text
-Laptop Stand -> Mechanical Keyboard
-
-38% of customers purchasing the stand also purchase the keyboard.
-Recommendation: Add keyboard recommendation at checkout.
-```
-
-The merchant must approve growth actions before execution.
-
-### 7. Audit Trail
-
-Because the system participates in commerce, every major AI and payment step should be auditable.
-
-Example audit log:
-
-```text
-12:31:02 User requested WFH products.
-12:31:04 AI searched product catalog.
-12:31:05 Found matching products.
-12:31:06 AI selected Laptop Stand.
-12:31:08 AI suggested Mechanical Keyboard.
-12:31:10 User approved purchase.
-12:31:11 Razorpay order created.
-12:31:20 Payment failed.
-12:31:24 AI offered retry.
-12:31:30 User approved retry.
-12:31:42 Payment successful.
-```
-
-## Major Screens
-
-### Explore
-
-The 3D India map where users discover cities, clusters, buildings, companies, and products.
-
-### AI Assistant
-
-A conversational interface where users describe what they need and receive AI-powered product recommendations.
-
-### Commerce
-
-Product detail, cart, AI purchase request, approval gate, Razorpay checkout, and payment result.
-
-### Merchant Growth
-
-A merchant dashboard showing business metrics and AI-generated revenue opportunities.
-
-### AI Activity
-
-An audit log showing the full decision and transaction history.
-
-## Trust and Control Model
-
-TechAtlas AI should be:
-
-- **Explainable:** The AI explains every recommendation and important action.
-- **Bounded:** The AI operates within spending limits and predefined rules.
-- **Gated:** Financial actions require explicit approval.
-- **Auditable:** User requests, AI reasoning, approvals, payments, and results are recorded.
-- **Recoverable:** Failed transactions can be retried only after user approval.
-
-## Recommended Tech Stack
-
-### Frontend
-
-- Next.js or React
-- Three.js
+- Next.js 15 and React 19
+- Three.js with React Three Fiber and Drei
 - Tailwind CSS
+- Natural Earth GeoJSON for local globe geography
+- Ollama with Qwen for local AI inference
 
-### Backend
+## Security And Demo Boundaries
 
-- Node.js with Express, or Python with FastAPI
+- Ollama is called from server-side API routes only.
+- API keys, if configured for an alternative provider, must never use `NEXT_PUBLIC_*` names.
+- Demo commerce actions are clearly labeled and never charge real money.
+- The globe uses local geographic assets and does not rely on a live map API at runtime.
 
-### Database
+## Current Scope
 
-- PostgreSQL
-
-### Geospatial
-
-- OpenStreetMap
-- GeoJSON
-- Geocoding
-
-### Payments
-
-- Razorpay Test Mode
-
-### AI
-
-- LLM-based agent
-- Tool calling for catalog search, cart actions, payment preparation, and audit logging
-
-## MVP Data
-
-The demo can use synthetic data:
-
-- 50-100 sample companies
-- 20-50 sample products
-- Sample customers
-- Sample transactions
-- Sample merchant analytics
-- Razorpay test orders and payments
-
-The data can be fake, but the workflow should feel real.
-
-## Final Vision
-
-TechAtlas AI connects physical company discovery with AI-native commerce.
-
-```text
-India Tech Ecosystem
-  -> 3D City Map
-  -> Company Discovery
-  -> AI Buyer Agent
-  -> AI Growth Agent
-  -> User or Merchant Approval
-  -> Razorpay Payment
-  -> Completed Transaction
-  -> Audit Trail
-```
-
-In one sentence:
-
-**TechAtlas AI is a 3D, AI-native map of India's technology ecosystem where intelligent agents help users discover and purchase products from companies while helping merchants identify and execute opportunities to grow revenue.**
+TechAtlas is currently an ecosystem exploration and planning demo. It does not include live payments, autonomous transactions, CRM delivery, or external campaign execution.
