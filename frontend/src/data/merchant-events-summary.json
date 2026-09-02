@@ -1,0 +1,284 @@
+{
+  "source": "2019-Oct.csv and 2019-Nov.csv from the supplied e-commerce event archive",
+  "generatedAt": "2026-09-02T18:54:43.592Z",
+  "currency": "USD",
+  "totals": {
+    "views": 104335509,
+    "addToCart": 3955446,
+    "purchases": 1659788,
+    "revenue": 505152392.77,
+    "events": 109950743
+  },
+  "products": [
+    {
+      "productId": "1005115",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 910725,
+      "addToCart": 80923,
+      "purchases": 34787,
+      "revenue": 33032381.67
+    },
+    {
+      "productId": "1005105",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 473651,
+      "addToCart": 32659,
+      "purchases": 15776,
+      "revenue": 21684603.37
+    },
+    {
+      "productId": "1004249",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 462353,
+      "addToCart": 39673,
+      "purchases": 17971,
+      "revenue": 13545407.54
+    },
+    {
+      "productId": "1005135",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 237065,
+      "addToCart": 17610,
+      "purchases": 7502,
+      "revenue": 12654328.77
+    },
+    {
+      "productId": "1004767",
+      "brand": "samsung",
+      "category": "electronics.smartphone",
+      "views": 861675,
+      "addToCart": 102217,
+      "purchases": 44419,
+      "revenue": 11004748.49
+    },
+    {
+      "productId": "1002544",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 409169,
+      "addToCart": 43790,
+      "purchases": 22227,
+      "revenue": 10458895.98
+    },
+    {
+      "productId": "1004856",
+      "brand": "samsung",
+      "category": "electronics.smartphone",
+      "views": 942167,
+      "addToCart": 133328,
+      "purchases": 61265,
+      "revenue": 7917932.74
+    },
+    {
+      "productId": "1005116",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 214874,
+      "addToCart": 22001,
+      "purchases": 7036,
+      "revenue": 7161938.29
+    },
+    {
+      "productId": "1002524",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 248725,
+      "addToCart": 27446,
+      "purchases": 12877,
+      "revenue": 6965532.89
+    },
+    {
+      "productId": "1004870",
+      "brand": "samsung",
+      "category": "electronics.smartphone",
+      "views": 462532,
+      "addToCart": 54036,
+      "purchases": 21288,
+      "revenue": 6057424.03
+    },
+    {
+      "productId": "1003317",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 211348,
+      "addToCart": 8684,
+      "purchases": 5254,
+      "revenue": 4994188.96
+    },
+    {
+      "productId": "4804056",
+      "brand": "apple",
+      "category": "electronics.audio.headphone",
+      "views": 497431,
+      "addToCart": 77400,
+      "purchases": 30181,
+      "revenue": 4921646.06
+    },
+    {
+      "productId": "1004873",
+      "brand": "samsung",
+      "category": "electronics.smartphone",
+      "views": 335443,
+      "addToCart": 28828,
+      "purchases": 12206,
+      "revenue": 4496619.33
+    },
+    {
+      "productId": "1004833",
+      "brand": "samsung",
+      "category": "electronics.smartphone",
+      "views": 450464,
+      "addToCart": 56048,
+      "purchases": 26183,
+      "revenue": 4494994.25
+    },
+    {
+      "productId": "1003306",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 195275,
+      "addToCart": 15707,
+      "purchases": 7366,
+      "revenue": 4311175.65
+    },
+    {
+      "productId": "1005106",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 75664,
+      "addToCart": 6782,
+      "purchases": 2907,
+      "revenue": 4303801.08
+    },
+    {
+      "productId": "1005129",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 81586,
+      "addToCart": 7276,
+      "purchases": 3081,
+      "revenue": 4185935.23
+    },
+    {
+      "productId": "1004258",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 169168,
+      "addToCart": 11430,
+      "purchases": 5422,
+      "revenue": 4108329.83
+    },
+    {
+      "productId": "1005132",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 89979,
+      "addToCart": 6691,
+      "purchases": 2911,
+      "revenue": 3978856.14
+    },
+    {
+      "productId": "1004237",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 100829,
+      "addToCart": 6095,
+      "purchases": 3420,
+      "revenue": 3765591.69
+    },
+    {
+      "productId": "1005124",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 70311,
+      "addToCart": 6336,
+      "purchases": 2328,
+      "revenue": 3719210.96
+    },
+    {
+      "productId": "1002633",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 214292,
+      "addToCart": 20771,
+      "purchases": 9923,
+      "revenue": 3664621.76
+    },
+    {
+      "productId": "1005144",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 64894,
+      "addToCart": 5127,
+      "purchases": 2167,
+      "revenue": 3647363.55
+    },
+    {
+      "productId": "1004659",
+      "brand": "samsung",
+      "category": "electronics.smartphone",
+      "views": 226208,
+      "addToCart": 10677,
+      "purchases": 4928,
+      "revenue": 3596284.27
+    },
+    {
+      "productId": "1004836",
+      "brand": "samsung",
+      "category": "electronics.smartphone",
+      "views": 323917,
+      "addToCart": 35750,
+      "purchases": 15549,
+      "revenue": 3582574.44
+    },
+    {
+      "productId": "1004246",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 139931,
+      "addToCart": 9906,
+      "purchases": 4461,
+      "revenue": 3394521.88
+    },
+    {
+      "productId": "1005118",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 86970,
+      "addToCart": 7828,
+      "purchases": 3245,
+      "revenue": 3169238.31
+    },
+    {
+      "productId": "1005104",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 112331,
+      "addToCart": 6437,
+      "purchases": 3088,
+      "revenue": 3050968.05
+    },
+    {
+      "productId": "1004250",
+      "brand": "apple",
+      "category": "electronics.smartphone",
+      "views": 112691,
+      "addToCart": 8744,
+      "purchases": 3403,
+      "revenue": 2769067.19
+    },
+    {
+      "productId": "1005174",
+      "brand": "Unbranded",
+      "category": "electronics.smartphone",
+      "views": 151341,
+      "addToCart": 8243,
+      "purchases": 4132,
+      "revenue": 2643002.2
+    }
+  ]
+}
