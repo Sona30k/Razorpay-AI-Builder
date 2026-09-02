@@ -12,7 +12,7 @@ import { StarField } from "@/components/map/StarField";
 import { TECH_CITIES } from "@/lib/cities";
 import { CompanyPanel } from "@/components/company/CompanyPanel";
 import { AIGrowthPanel } from "@/components/company/AIGrowthPanel";
-import { ThemeToggle } from "@/components/common/ThemeToggle";
+import Link from "next/link";
 import { companyDiagnostics, filterCompanies, isNearCity } from "@/lib/companies";
 import type { Company } from "@/types/company";
 import {
@@ -151,7 +151,11 @@ export function TechMap() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-3"><p className={`hidden text-xs uppercase tracking-[0.24em] sm:block ${cityMode ? "text-slate-500" : "text-slate-600"}`}>India focus sequence</p><ThemeToggle /></div>
+        <div className="flex items-center gap-3">
+          <p className={`hidden text-xs uppercase tracking-[0.24em] sm:block ${cityMode ? "text-slate-500" : "text-slate-600"}`}>India focus sequence</p>
+          <Link href="/investor-radar" className="pointer-events-auto hidden rounded bg-white/6 px-3 py-2 text-sm hover:bg-white/10 sm:inline">Investor Radar</Link>
+          <Link href="/merchant-growth" className="pointer-events-auto inline-flex shrink-0 rounded bg-white/6 px-2.5 py-2 text-xs hover:bg-white/10 sm:px-3 sm:text-sm">Merchant Growth</Link>
+        </div>
       </div>
 
       {!cityMode ? <div className="pointer-events-none absolute inset-x-3 bottom-4 flex justify-center sm:inset-y-0 sm:right-6 sm:left-auto sm:items-center sm:pr-0 lg:right-8">

@@ -23,7 +23,7 @@ export function CompanyPanel({ company, onClose, onExploreAI, hasAnalysis = fals
         .join(" · ");
 
     return (
-        <aside className={`theme-surface pointer-events-auto absolute left-5 top-24 z-20 max-h-[calc(100%-20rem)] w-[min(18rem,calc(100%-2.5rem))] overflow-y-auto rounded-lg border border-white/10 bg-slate-950/85 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.38)] backdrop-blur-md text-slate-100 lg:left-[16rem] lg:top-32 lg:max-h-[calc(100%-9rem)] lg:w-[17.5rem] xl:w-[22rem] ${hasAnalysis ? "max-lg:hidden" : ""}`}>
+        <aside className={`theme-surface pointer-events-auto absolute left-5 top-24 z-20 max-h-[calc(100%-20rem)] w-[min(18rem,calc(100%-2.5rem))] overflow-y-auto rounded-lg border border-white/10 bg-slate-950/85 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.38)] backdrop-blur-md text-slate-100 lg:left-[16rem] lg:top-32 lg:max-h-[calc(100%-9rem)] lg:w-[17.5rem] xl:w-[22rem] ${hasAnalysis ? "hidden" : ""}`}>
             <div className="flex items-start justify-between gap-3">
                 <div>
                     <p className="text-base font-semibold tracking-wide">{company.name}</p>
