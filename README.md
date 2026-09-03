@@ -1,78 +1,200 @@
 # TechAtlas AI
 
-TechAtlas AI is an interactive 3D map of India's technology ecosystem. It combines a real-geography Earth view, city-scale visualizations, company discovery, and local AI-assisted growth workflows.
+**An interactive AI-powered map and intelligence platform for India's technology ecosystem, combining geographic company discovery, investor intelligence, and merchant growth analytics.**
+
+TechAtlas AI helps people move from a geographic view of India's technology ecosystem to useful company, investor, and merchant-growth context. It brings together a real-world globe, five technology-city views, a local company directory, structured AI workflows, investor research tools, and a merchant analytics demo.
+
+The project is designed for technology ecosystem explorers, founders and business teams, investors and researchers, and merchants who want a visual starting point for exploration and planning. Geography provides the context; structured company data and AI-assisted workflows help turn that context into questions, hypotheses, and next steps.
+
+## Product Flows
+
+### Ecosystem Explorer
 
 ```text
-Earth -> City -> Company -> Growth Analysis -> Risk Analysis / Growth Plan -> Action Center
+Earth -> City -> Company -> Company Details -> Growth Analysis -> Risk Analysis -> Growth Plan -> Action Center
 ```
 
-## What Works Today
-
-- Real Natural Earth country geometry rendered locally on a Three.js globe.
-- Geographic markers for Bengaluru, Hyderabad, Pune, Gurugram, and Delhi.
-- Interactive city views with visible buildings, roads, parks, water, and company markers.
-- Searchable company data by city, company name, category, and industry.
-- Company details, AI Growth Analysis, Risk Analysis, Growth Planner, and Action Center.
-- Server-side AI provider selection: Gemini for hosted deployments, Ollama for local development, and a deterministic `MOCK_AI_MODE` fallback.
-- Merchant Growth uses a compact summary generated from the supplied October and November 2019 e-commerce event archive.
-- Demo commerce actions, plus an opt-in Razorpay **test-mode** order and signature-verification boundary. No live payments are enabled.
-
-## Product Flow
-
-### Real Earth View
-
-The landing globe uses the bundled Natural Earth country-boundary dataset in `frontend/public/geodata/`. Land, coastlines, country borders, and the five city positions are derived from geographic coordinates.
-
-### City And Company Discovery
-
-Selecting a city opens a stylized city scene. Buildings, roads, parks, and water are visual layers for orientation; company markers use the local company dataset.
+### Investor Radar
 
 ```text
-Company list -> Company details -> Explore with AI
+Investor Radar -> Filter -> Discover Companies -> Compare -> Watchlist -> Investor Intelligence Brief
 ```
 
-On desktop, the company list, company details, and analysis occupy separate columns. Smaller screens use focused scrollable panels to prevent overlap.
+### Merchant Growth Intelligence
 
-### Growth Workflows
-
-Growth Analysis uses the selected company's available fields to return structured opportunity, segment, strategy, impact, priority, and KPI data. Users can then:
-
-- Analyze estimated business risks.
-- Build a four-action growth plan.
-- Mark execution-plan actions complete.
-- Open a demo Action Center for a selected action.
-
-Risk output is a TechAtlas estimate based on available information. It is not a financial, credit, legal, or investment rating.
-
-## Local Setup
-
-### Requirements
-
-- Node.js 20+
-- Ollama and a local model only when using the local AI provider
-
-### Run Ollama
-
-```bash
-ollama serve
-ollama pull qwen2.5:0.5b
+```text
+Merchant Dashboard -> Analyze Historical Merchant Data -> Growth Opportunities -> Review and Approve -> Demo Action Center -> Demo Execution Metrics
 ```
 
-### Configure Environment
+## Key Features
 
-Create `frontend/.env.local` from `frontend/.env.example`.
+### Real Earth and Geographic Explorer
 
-```env
-MOCK_AI_MODE=false
-MOCK_COMMERCE_MODE=true
-AI_PROVIDER=ollama
-OLLAMA_MODEL=qwen2.5:0.5b
-OLLAMA_BASE_URL=http://127.0.0.1:11434
+- Interactive Three.js globe backed by local Natural Earth country geometry.
+- Filled continents, country boundaries, coastlines, and India-focused geographic context.
+- Real coordinates for Bengaluru, Hyderabad, Pune, Gurugram, and Delhi.
+- Globe navigation and transitions from the Earth view into a selected city.
+
+### City Explorer
+
+- City-level visual environment with roads, parks, water, and company markers.
+- Search companies by name, category, or industry within a selected city.
+- Floating company labels and selected-company details.
+- City switching resets the relevant company selection and search state.
+
+> **Rendering note:** the active city environment uses procedural/sample 3D geometry for visual orientation. It is not a real-world building GIS renderer. Static city-data files are bundled for the city-data API, but they are not the source of the currently rendered procedural buildings.
+
+### Company Discovery
+
+- Local dataset of 1,419 imported company records across the five supported cities.
+- Geographic company coordinates, city filtering, search, floating markers, and company popups.
+- Available company category, industry, description, address, funding, and investor fields.
+- Company-logo support with fallback initials when a logo is unavailable.
+- Compact spatial company-directory experience instead of a generic table.
+
+### Investor Radar and Investor Intelligence
+
+- Filter companies by city, industry, reported funding, investor name, search query, and sort order.
+- View company information, available funding and investor fields, and data-confidence indicators.
+- Select up to four companies for comparison.
+- Add, remove, view, and compare companies from a watchlist.
+- Explore investor relationships from available company records.
+- Generate a structured investor brief with research signals, confidence labels, and research questions.
+
+Watchlists use browser storage by default. Optional server-side persistence endpoints are available when deployment configuration is supplied.
+
+### AI Growth Analysis
+
+- `POST /api/ai/growth` produces a structured company-specific analysis.
+- Covers a growth opportunity, why it is relevant, target segment, recommended strategy, expected impact, priority, difficulty, and KPIs.
+- Uses only selected company fields supplied to the server-side route.
+- Supports deterministic development responses through `MOCK_AI_MODE=true`.
+
+### Risk Analysis
+
+- Structured overall risk score and level.
+- Six estimated research-signal categories: competition, market, funding, customer acquisition, execution, and geographic risk.
+- Each category includes a score, reason, and mitigation.
+- Includes a key risk and recommendation, with a return path to Growth Analysis or Growth Plan.
+
+> Risk output is a TechAtlas estimate based on available company and market information. It is not financial, investment, legal, or credit advice, and it is not an official rating or guaranteed prediction.
+
+### Growth Planner
+
+- Converts growth-analysis context into a goal, strategy, action plan, timelines, priorities, KPIs, expected outcomes, and risks.
+- Produces four to six practical actions when the provider response validates successfully.
+- Lets users mark actions complete and track progress.
+- Opens an Action Center for an individual growth-plan action.
+
+### Action Center
+
+- Displays the selected company and approved growth action.
+- Presents recommended next steps and demo action choices such as campaign, landing-page, customer-segment, and conversion-tracking work.
+- Provides loading, success, and retry states.
+- Demo execution states are explicitly labelled; no external business system is changed.
+
+### Merchant Growth Intelligence
+
+- Merchant dashboard based on imported **historical public/demo event data**, not a live merchant feed.
+- Displays recorded revenue, purchases, average order value, conversion rate, product views, add-to-cart events, and product performance.
+- Identifies evidence-based upsell, cross-sell, product-improvement, and campaign opportunities.
+- Shows the evidence, recommendation, expected impact, and source metrics behind each opportunity.
+- Includes a review, approve, reject, and simulated execution flow with clearly labelled demo performance metrics.
+
+The merchant dashboard uses a compact summary derived from the supplied October and November 2019 e-commerce event archive. It does not connect to a live store, customer database, or campaign system.
+
+## AI Architecture
+
+```text
+React frontend -> Next.js API route -> server-side AI provider -> structured JSON validation -> frontend UI
 ```
 
-Set `MOCK_AI_MODE=true` to use deterministic development analysis, risk, and planning responses without calling Ollama.
+AI is never called directly from browser code.
 
-### Start The App
+- `AI_PROVIDER=gemini` uses the official `@google/genai` SDK with `GEMINI_API_KEY` held on the server.
+- `AI_PROVIDER=ollama` uses a server-side Ollama endpoint for local development or a reachable hosted Ollama service.
+- `AI_PROVIDER=auto` selects Ollama locally and Gemini on Vercel.
+- `MOCK_AI_MODE=true` bypasses providers and returns deterministic demo data for growth analysis, risk analysis, planning, investor briefs, and merchant opportunities.
+
+Each route validates structured output before the frontend receives it. Provider or schema failures are returned as safe application errors rather than exposing secrets or raw provider responses.
+
+## API Routes
+
+| Method | Route | Purpose | Provider / Data |
+| --- | --- | --- | --- |
+| `POST` | `/api/ai/growth` | Structured company growth analysis. | AI provider or deterministic mock data. |
+| `POST` | `/api/ai/risk` | Structured estimated company risk analysis. | AI provider or deterministic mock data. |
+| `POST` | `/api/ai/growth-plan` | Structured growth goal and execution plan. | AI provider or deterministic mock data. |
+| `POST` | `/api/ai/investor-brief` | Investor research brief for selected companies. | AI provider or deterministic mock data. |
+| `POST` | `/api/merchant/growth` | Merchant growth opportunities from historical aggregates. | AI provider or deterministic derivation. |
+| `POST` | `/api/commerce/action` | Demo Action Center result for a selected growth action. | Deterministic demo workflow. |
+| `GET` | `/api/city-data` | Serves static city geography data. | Bundled city JSON. |
+| `GET` | `/api/buildings` | Serves bundled building sample data. | Local sample data. |
+| `GET` | `/api/persistence/workspace` | Starts or reads an optional signed persistence workspace. | Optional server-side persistence. |
+| `GET`, `POST`, `DELETE` | `/api/persistence/watchlist` | Reads and updates an optional persisted watchlist. | Optional server-side persistence. |
+| `POST` | `/api/persistence/records` | Stores optional analysis, plan, and action records. | Optional server-side persistence. |
+
+## Data Sources
+
+| Dataset | Location | Contents and Scope |
+| --- | --- | --- |
+| Natural Earth countries | `frontend/public/geodata/natural-earth-countries.geojson` | Local public country and coastline geometry used by the globe. |
+| Company dataset | `frontend/public/company-data/companies.json` | 1,419 imported company records for Bengaluru, Hyderabad, Pune, Gurugram, and Delhi. Source metadata is in `companies.meta.json`. |
+| Static city data | `frontend/public/city-data/*.json` | Bundled building, road, park, and water data for the five city-data endpoints. Separate from the active procedural city renderer. |
+| Merchant summary | `frontend/src/data/merchant-events-summary.json` | Compact aggregate derived from supplied October and November 2019 e-commerce event files. Historical demo/public data only. |
+| Company enrichment overlay | `data/companies/enrichment.json` | Empty-by-default verified overlay for websites, logos, and descriptions. It remains empty until verified enrichment is imported. |
+
+## Technology Stack
+
+- Next.js 15
+- React 19
+- TypeScript
+- Three.js
+- React Three Fiber
+- Drei
+- Tailwind CSS
+- `@google/genai` for Gemini integration
+- Ollama for local or hosted server-side inference
+- pnpm package manager and Node.js 20+
+
+## Project Structure
+
+```text
+TechAtlas AI/
+  data/
+    companies/                  # Source and verified enrichment overlay
+  frontend/
+    public/
+      city-data/                # Five bundled static city datasets
+      company-data/             # Imported company records and metadata
+      geodata/                  # Natural Earth country geometry
+    scripts/                    # Data preparation, enrichment, provider checks
+    src/
+      app/
+        api/                    # AI, city, merchant, action, persistence routes
+        investor-radar/         # Investor Radar page
+        merchant-growth/        # Merchant Growth page
+      components/
+        company/                # Details, analysis, risk, planning, action center
+        investor/               # Filters, lists, comparison, watchlist, brief UI
+        map/                    # Globe, city, procedural city, markers, controls
+        merchant/               # Merchant dashboard and opportunity UI
+      data/                     # Merchant aggregate summary
+      lib/                      # AI providers, data helpers, geography utilities
+      types/                    # Shared TypeScript types
+  scripts/
+    import-company-data.mjs     # Company dataset importer
+```
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 20–24
+- pnpm
+- Ollama only when using `AI_PROVIDER=ollama`
+
+### Install and Run
 
 ```bash
 cd frontend
@@ -82,137 +204,45 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### Production Build
+### Environment Variables
+
+Copy `frontend/.env.example` to `frontend/.env.local` and configure only the provider and optional services you use. Relevant variable names include:
+
+```text
+AI_PROVIDER
+MOCK_AI_MODE
+GEMINI_API_KEY
+GEMINI_MODEL
+OLLAMA_BASE_URL
+OLLAMA_MODEL
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+PERSISTENCE_SESSION_SECRET
+GOOGLE_PLACES_API_KEY
+```
+
+Do not expose server-side values through `NEXT_PUBLIC_*` variables. The application can run in deterministic mock mode without an external AI provider.
+
+### Useful Commands
 
 ```bash
 cd frontend
 pnpm build
-```
-
-## Deploy To Vercel
-
-1. Import the GitHub repository into Vercel.
-2. In **Project Settings -> General**, set **Root Directory** to `frontend`.
-3. Vercel uses `frontend/vercel.json` and the committed `pnpm-lock.yaml` to install and build the Next.js app.
-4. Choose one safe AI configuration for **Production**, **Preview**, and **Development**.
-
-   **Explicit Vercel demo mode** requires no provider or secret:
-
-```env
-MOCK_AI_MODE=true
-MOCK_COMMERCE_MODE=true
-```
-
-   **Hosted Gemini mode** runs real generation server-side:
-
-```env
-MOCK_AI_MODE=false
-AI_PROVIDER=gemini
-GEMINI_API_KEY=...
-GEMINI_MODEL=gemini-3.6-flash
-MOCK_COMMERCE_MODE=true
-```
-
-Vercel functions cannot reach Ollama running on a local computer. The explicit demo configuration keeps growth analysis, risk analysis, planning, investor briefs, and commerce actions functional through clearly labelled deterministic responses. The Gemini key is never sent to the browser.
-
-To use a hosted Ollama service instead, set `MOCK_AI_MODE=false`, `AI_PROVIDER=ollama`, and configure server-only `OLLAMA_BASE_URL` and `OLLAMA_MODEL`. Never add provider secrets using a `NEXT_PUBLIC_` environment variable.
-
-### Persistence With Supabase
-
-Vercel does not provide durable local disk storage. To persist watchlists, analyses, risk reports, growth plans, and Action Center outcomes, create a Supabase project and run [`frontend/supabase/schema.sql`](/Users/sonakerketta/Documents/ChatGPT/razorpay/frontend/supabase/schema.sql) in its SQL editor. Then configure only server-side values:
-
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=...
-PERSISTENCE_SESSION_SECRET=a-long-random-secret
-```
-
-When these values are absent, the app deliberately falls back to browser-local watchlists instead of pretending that data is durable. The service-role key stays in server routes and is never exposed to the browser.
-
-### Razorpay Test Integration
-
-The Razorpay boundary is opt-in and accepts **test mode only**:
-
-```env
-RAZORPAY_MODE=test
-RAZORPAY_KEY_ID=rzp_test_...
-RAZORPAY_KEY_SECRET=...
-RAZORPAY_TEST_AMOUNT_PAISE=10000
-```
-
-`POST /api/payments/order` creates a server-side Razorpay test order, and `POST /api/payments/verify` verifies the checkout signature. No live-mode key, payment capture, or production charging path is enabled. Keep `MOCK_COMMERCE_MODE=true` until a checkout and webhook workflow is explicitly required.
-
-### Company Enrichment
-
-The source dataset has no websites for the imported companies and only partial descriptions. TechAtlas now supports a verified enrichment overlay at `data/companies/enrichment.json`; running `node scripts/import-company-data.mjs` merges that overlay into the public dataset.
-
-To collect only exact website matches from Google Places Text Search (New), configure `GOOGLE_PLACES_API_KEY` locally and run:
-
-```bash
-cd frontend
+pnpm validate:city-data
+pnpm import:merchant-data
 pnpm enrich:companies -- --limit 25 --dry-run
-pnpm enrich:companies -- --limit 25
-cd ..
-node scripts/import-company-data.mjs
+pnpm test:gemini
 ```
 
-The importer accepts a website only when the returned place name and city exactly match the existing company record. It derives a favicon URL only from that verified website domain and leaves descriptions unchanged unless a verified description is supplied in the overlay. This avoids fabricating company facts.
+## Deployment Notes
 
-## Architecture
+Set the Vercel project root directory to `frontend`.
 
-TechAtlas is currently a full-stack Next.js application. The browser uses the frontend in `frontend/`, and its server-side API routes in `frontend/src/app/api/` handle growth analysis, risk analysis, planning, investor briefs, city data, and demo commerce actions.
+- For a no-secret demo deployment, use `MOCK_AI_MODE=true`.
+- For real server-side Gemini generation, configure `AI_PROVIDER=gemini`, `GEMINI_API_KEY`, and `GEMINI_MODEL` in Vercel.
+- Vercel cannot access an Ollama server running on a local computer.
+- Optional persistence requires separately configured server-side persistence variables and schema.
 
-The separate `backend/` directory is an unused scaffold and is not required to run locally or deploy to Vercel. A standalone backend becomes useful only for future needs such as a database, authentication, background jobs, live payment providers, or other external integrations.
+## Current Boundaries
 
-### Merchant Growth Data
-
-Merchant Growth uses the committed summary at `frontend/src/data/merchant-events-summary.json`. It was generated by streaming both files in the supplied archive through `frontend/scripts/import-merchant-events.mjs`, processing 109,950,743 historical events across 206,876 products. The UI uses the top 30 products ranked by recorded purchase revenue. Raw archive files are not shipped to the browser or included in the deployment.
-
-## API Routes
-
-| Route | Purpose |
-| --- | --- |
-| `POST /api/ai/growth` | Company-specific structured growth analysis. |
-| `POST /api/ai/risk` | Structured estimated risk analysis. |
-| `POST /api/ai/growth-plan` | Structured four-action growth plan. |
-| `POST /api/commerce/action` | Deterministic demo Action Center result. |
-| `POST /api/payments/order` | Optional Razorpay test-order creation. |
-| `POST /api/payments/verify` | Optional server-side Razorpay signature verification. |
-| `GET/POST/DELETE /api/persistence/watchlist` | Optional Supabase-backed watchlist persistence. |
-| `POST /api/persistence/records` | Optional persisted AI plans, reports, and action outcomes. |
-| `GET /api/city-data` | Static city geography data. |
-| `GET /api/buildings` | Building data endpoint. |
-
-## Project Structure
-
-```text
-frontend/
-  public/
-    company-data/        # Company dataset
-    city-data/           # Static city datasets
-    geodata/             # Bundled Natural Earth geography
-  src/
-    app/api/             # AI, city, building, and demo-commerce endpoints
-    components/map/      # Globe, city view, company markers, controls
-    components/company/  # Details, analysis, risk, plan, action center
-    lib/                 # Geographic, company, AI-provider helpers
-```
-
-## Technology
-
-- Next.js 15 and React 19
-- Three.js with React Three Fiber and Drei
-- Tailwind CSS
-- Natural Earth GeoJSON for local globe geography
-- Gemini for hosted AI inference, or Ollama with Qwen locally
-
-## Security And Demo Boundaries
-
-- AI providers are called from server-side API routes only.
-- Provider, Supabase, and Razorpay secret keys must never use `NEXT_PUBLIC_*` names.
-- Demo commerce actions are clearly labeled and never charge real money. Razorpay is test-mode only and performs server-side signature verification.
-- The globe uses local geographic assets and does not rely on a live map API at runtime.
-
-## Current Scope
-
-TechAtlas is currently an ecosystem exploration and planning demo. It does not include live-mode payments, autonomous transactions, CRM delivery, or external campaign execution.
+TechAtlas AI is an ecosystem exploration, intelligence, and planning product. It does not connect to live merchant stores, customer systems, campaign systems, or payment providers. Demo execution is clearly labelled and does not perform external transactions.
