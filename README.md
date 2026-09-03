@@ -89,6 +89,22 @@ cd frontend
 pnpm build
 ```
 
+## Deploy To Vercel
+
+1. Import the GitHub repository into Vercel.
+2. In **Project Settings -> General**, set **Root Directory** to `frontend`.
+3. Vercel uses `frontend/vercel.json` and the committed `pnpm-lock.yaml` to install and build the Next.js app.
+4. Add these environment variables for **Production**, **Preview**, and **Development**:
+
+```env
+MOCK_AI_MODE=true
+MOCK_COMMERCE_MODE=true
+```
+
+This is the recommended deployment configuration because a Vercel serverless function cannot access Ollama running on a local computer. It keeps growth analysis, risk analysis, planning, investor briefs, and commerce actions functional through their clearly labelled deterministic demo flows. No secrets are needed for this setup.
+
+To use a hosted Ollama service later, set `MOCK_AI_MODE=false` and configure server-only `OLLAMA_BASE_URL` and `OLLAMA_MODEL` in Vercel. Never add a provider secret using a `NEXT_PUBLIC_` environment variable.
+
 ## API Routes
 
 | Route | Purpose |

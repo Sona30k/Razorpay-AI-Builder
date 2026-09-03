@@ -10,6 +10,7 @@ build/
 .env.*.local
 
 *.log
+*.tsbuildinfo
 .DS_Store
 
 # Local OpenStreetMap import source; generated static city JSON is committed instead.
