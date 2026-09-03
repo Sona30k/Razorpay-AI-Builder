@@ -133,7 +133,7 @@ export function TechMap() {
           </Globe>
         ) : null}
         {selectedCity ? (
-          <CityView city={selectedCity} companies={mappedCompanies} onSelectCompany={selectCompany} selectedCompanyId={selectedCompany?.id ?? null} />
+          <CityView city={selectedCity} companies={filteredCompanies} onSelectCompany={selectCompany} selectedCompanyId={selectedCompany?.id ?? null} />
         ) : null}
       </Canvas>
 
@@ -151,9 +151,8 @@ export function TechMap() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <p className={`hidden text-xs uppercase tracking-[0.24em] sm:block ${cityMode ? "text-slate-500" : "text-slate-600"}`}>India focus sequence</p>
-          <Link href="/investor-radar" className="pointer-events-auto hidden rounded bg-white/6 px-3 py-2 text-sm hover:bg-white/10 sm:inline">Investor Radar</Link>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link href="/investor-radar" className="pointer-events-auto inline-flex shrink-0 rounded bg-white/6 px-2.5 py-2 text-xs hover:bg-white/10 sm:px-3 sm:text-sm">Investor Radar</Link>
           <Link href="/merchant-growth" className="pointer-events-auto inline-flex shrink-0 rounded bg-white/6 px-2.5 py-2 text-xs hover:bg-white/10 sm:px-3 sm:text-sm">Merchant Growth</Link>
         </div>
       </div>
@@ -193,17 +192,17 @@ export function TechMap() {
       ) : null}
 
       {/* Company search + panel when a city is selected */}
-      {selectedCity ? (
-        <div className="pointer-events-auto absolute left-1/2 top-4 w-[min(38rem,calc(100%-11rem))] -translate-x-1/2 sm:top-5 sm:w-[min(40rem,60%)]">
-          <div className="theme-surface mx-auto w-full rounded-lg border border-white/8 bg-slate-950/70 p-2 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,.2)]">
-            <div className="flex items-center gap-3">
+      {selectedCity && !selectedCompany ? (
+        <div className="pointer-events-auto absolute left-5 top-36 w-[min(18rem,calc(100%-2.5rem))] sm:left-8 sm:top-40 sm:w-72">
+          <div className="theme-surface mx-auto w-full rounded-lg border border-white/8 bg-slate-950/70 p-1.5 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,.2)]">
+            <div className="flex items-center gap-2">
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={`Search companies in ${selectedCity.name} (name, category, industry)`}
-                className="w-full rounded bg-transparent px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+                className="w-full rounded bg-transparent px-2.5 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none sm:text-sm"
               />
-              <div className="shrink-0 text-xs text-slate-400">{filteredCompanies.length} companies</div>
+              <div className="shrink-0 text-[10px] text-slate-400 sm:text-xs">{filteredCompanies.length} companies</div>
             </div>
           </div>
         </div>
@@ -212,26 +211,6 @@ export function TechMap() {
       {selectedCompany ? <CompanyPanel company={selectedCompany} hasAnalysis={Boolean(aiCompany)} onClose={() => { setSelectedCompany(null); setAiCompany(null); }} onExploreAI={() => setAiCompany(selectedCompany)} /> : null}
       {aiCompany ? <AIGrowthPanel company={aiCompany} onClose={() => setAiCompany(null)} /> : null}
       {!cityMode ? <CityInfo city={selectedCity} /> : null}
-      {selectedCity ? (
-        <div className="theme-surface pointer-events-auto absolute bottom-16 left-5 z-10 max-h-72 w-[min(13.5rem,calc(100%-2.5rem))] overflow-auto rounded-lg border border-white/6 bg-slate-950/80 p-2.5 shadow-[0_12px_36px_rgba(0,0,0,.22)] backdrop-blur-md sm:bottom-auto sm:left-8 sm:top-32">
-          <p className="px-1 text-[10px] font-medium uppercase tracking-[.14em] text-slate-400">Companies in {selectedCity.name}</p>
-          {cityCompanyStats && cityCompanyStats.mappable !== cityCompanyStats.total ? (
-            <p className="mt-0.5 text-[10px] text-slate-500">{cityCompanyStats.mappable} mapped in this city view</p>
-          ) : null}
-          <ul className="mt-2 space-y-0.5">
-            {mappedCompanies.map((c) => (
-              <li key={c.id}>
-                <button
-                  onClick={() => selectCompany(c)}
-                  className="w-full rounded px-1.5 py-1 text-left text-sm text-slate-200 transition hover:bg-sky-400/10 hover:text-white"
-                >
-                  {c.name} <span className="text-xs text-slate-500">· {c.category}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
     </div>
   );
 }
