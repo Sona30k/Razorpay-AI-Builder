@@ -22,6 +22,7 @@ export function GrowthPlanner({ company, analysis, onBack }: Props) {
       const body = await response.json();
       if (!response.ok || !body.plan) throw new Error("plan unavailable");
       setPlan(body.plan); setDemo(body.demo === true);
+      void fetch("/api/persistence/records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: "growth-plan", companyId: company.id, payload: body.plan }) });
     } catch { setError(true); } finally { setLoading(false); }
   };
   useEffect(() => { void load(); }, []);

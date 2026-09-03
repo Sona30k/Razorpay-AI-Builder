@@ -13,7 +13,9 @@
     "import:merchant-data": "node scripts/import-merchant-events.mjs",
     "prepare:city-data": "node scripts/prepare-city-data.mjs",
     "extract:city-data": "/opt/anaconda3/bin/python3 scripts/extract_city_data.py ../data/osm/india-260830.osm.pbf",
-    "validate:city-data": "node scripts/validate-city-data.mjs"
+    "validate:city-data": "node scripts/validate-city-data.mjs",
+    "enrich:companies": "node scripts/enrich-companies.mjs",
+    "test:gemini": "node scripts/gemini-test.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.20.0",

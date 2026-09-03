@@ -31,7 +31,7 @@ if (MOCK) {
 }
 
 const apiKey = process.env.GEMINI_API_KEY;
-const model = process.env.GEMINI_MODEL || 'gemini-3.7-flash';
+const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 if (!apiKey) {
     console.error('GEMINI_API_KEY is not set in environment (.env.local).');
     process.exit(2);
@@ -50,20 +50,27 @@ if (!apiKey) {
             process.exit(4);
         }
         const ai = new GoogleGenAI({ apiKey });
-        const prompt = 'Respond with a single-line JSON object exactly like: {"test": true, "note": "gemini test"}';
-        // Try the interactions.create API
-        const genResponse = await ai.interactions.create?.({
-            input: { type: 'text', text: prompt },
-            model
-        }).catch((e) => { throw e; });
-        const payload = genResponse ?? {};
-        const candidate = payload?.candidates?.[0]?.content?.map((c) => c?.text).filter(Boolean).join('\n')
-            || payload?.candidates?.[0]?.text
-            || payload?.output?.[0]?.content?.map((c) => c?.text).filter(Boolean).join('\n')
-            || JSON.stringify(payload);
-        const text = typeof candidate === 'string' ? candidate : JSON.stringify(candidate);
+        if (process.argv.includes('--list-models')) {
+            const pager = await ai.models.list();
+            const page = await pager.page;
+            const models = (page ?? []).map((item) => item?.name).filter((name) => typeof name === 'string' && name.includes('flash'));
+            console.log('Available Flash models:', models.join(', '));
+            process.exit(0);
+        }
+        const prompt = 'Respond with this JSON object only: {"test":true,"note":"gemini test"}';
+        const genResponse = await ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 100 }
+        });
+        const text = genResponse?.text;
+        if (typeof text !== 'string' || !text.trim()) throw new Error('Gemini returned no text.');
+        const cleaned = text.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '');
+        const start = cleaned.indexOf('{');
+        const end = cleaned.lastIndexOf('}');
+        JSON.parse(start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned);
         console.log('Gemini SDK call succeeded. Model used:', model);
-        console.log('Raw response excerpt:', text.slice(0, 1000));
+        console.log('Structured JSON response was validated.');
         process.exit(0);
     } catch (err) {
         console.error('Gemini SDK test failed:');

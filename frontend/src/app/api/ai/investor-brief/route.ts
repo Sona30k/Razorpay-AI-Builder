@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Company } from "@/types/company";
 import { companySector, formatFunding, investorNames } from "@/lib/investor";
-import { generateOllamaJson, OllamaProviderError } from "@/lib/ollama";
+import { generateAiJson, AiProviderError, isMockAiMode } from "@/lib/ai-provider";
 
 export const runtime = "nodejs";
 type Signal = { type: string; title: string; evidence: string; confidence: "Low" | "Medium" | "High" };
@@ -26,13 +26,13 @@ export async function POST(request: Request) {
   try {
     const { companies } = await request.json() as { companies?: Company[] };
     if (!Array.isArray(companies) || companies.length === 0) return NextResponse.json({ error: "At least one company is required." }, { status: 400 });
-    if (process.env.MOCK_AI_MODE === "true") return NextResponse.json(demo(companies));
+    if (isMockAiMode()) return NextResponse.json(demo(companies));
     const facts = companies.slice(0, 5).map((company) => ({ name: company.name, city: company.city, sector: companySector(company), funding: formatFunding(company), investors: investorNames(company) }));
-    const result = await generateOllamaJson(`Use only these TechAtlas company facts: ${JSON.stringify(facts)}. Do not invent facts. Return JSON only with {summary,signals:[{type,title,evidence,confidence}],researchQuestions,note}. confidence must be Low, Medium, or High. note must say this is based on available TechAtlas dataset information.`, 1200);
+    const result = await generateAiJson(`Use only these TechAtlas company facts: ${JSON.stringify(facts)}. Do not invent facts. Return JSON only with {summary,signals:[{type,title,evidence,confidence}],researchQuestions,note}. confidence must be Low, Medium, or High. note must say this is based on available TechAtlas dataset information.`, 1200, 15_000);
     if (!valid(result)) return NextResponse.json({ error: "Investor brief is temporarily unavailable. Please try again later." }, { status: 502 });
     return NextResponse.json(result);
   } catch (error) {
-    const status = error instanceof OllamaProviderError ? error.status : undefined;
+    const status = error instanceof AiProviderError ? error.status : undefined;
     return NextResponse.json({ error: "Investor brief is temporarily unavailable. Please try again later." }, { status: status === 429 ? 429 : 502 });
   }
 }

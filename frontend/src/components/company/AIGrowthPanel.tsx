@@ -28,6 +28,7 @@ export function AIGrowthPanel({ company, onClose }: Props) {
       if (!response.ok || !body.analysis) throw new Error("analysis unavailable");
       const isDemo = body.demo === true;
       cache.set(company.id, { analysis: body.analysis, demo: isDemo }); setAnalysis(body.analysis); setDemo(isDemo);
+      void fetch("/api/persistence/records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: "growth-analysis", companyId: company.id, payload: body.analysis }) });
     } catch { setError(true); } finally { setLoading(false); }
   };
   useEffect(() => { if (!analysis) void load(); }, [company.id]);

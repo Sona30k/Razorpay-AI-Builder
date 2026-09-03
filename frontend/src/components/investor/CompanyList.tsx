@@ -8,7 +8,15 @@ export default function CompanyList({ companies, onSelectInvestor, onView, compa
     const handleCompare = (company: Company) => {
         setCompareIds((prev: string[]) => prev.includes(company.id) ? prev.filter((p) => p !== company.id) : (prev.length < 4 ? [...prev, company.id] : prev));
     };
-    const handleWatch = (company: Company) => {
+    const handleWatch = async (company: Company) => {
+        try {
+            const workspace = await fetch('/api/persistence/workspace');
+            const config = await workspace.json() as { enabled?: boolean };
+            if (config.enabled) {
+                const response = await fetch('/api/persistence/watchlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ companyId: company.id }) });
+                if (response.ok) { window.dispatchEvent(new Event('techatlas.watchlistUpdated')); return; }
+            }
+        } catch { /* Browser storage remains the non-configured fallback. */ }
         const key = 'techatlas-watchlist';
         const raw = window.localStorage.getItem(key);
         const arr = raw ? JSON.parse(raw) : [];
@@ -22,7 +30,7 @@ export default function CompanyList({ companies, onSelectInvestor, onView, compa
                 <div className="theme-surface rounded-lg border p-6 text-center text-slate-400">NO COMPANIES FOUND<br />Try changing filters.</div>
             ) : (
                 companies.map((c) => (
-                    <CompanyCard key={c.id} company={c} onView={onView} onCompare={handleCompare} onWatch={handleWatch} onSelectInvestor={onSelectInvestor} />
+                    <CompanyCard key={c.id} company={c} isCompared={compareIds.includes(c.id)} onView={onView} onCompare={handleCompare} onWatch={(company) => void handleWatch(company)} onSelectInvestor={onSelectInvestor} />
                 ))
             )}
         </div>

@@ -20,6 +20,7 @@ export function RiskAnalysisPanel({ company, analysis, onBack, onContinue }: { c
             const body = await resp.json() as Response;
             if (!resp.ok || !body.analysis) throw new Error(body.error ?? "analysis unavailable");
             setData(body.analysis); setDemo(body.demo === true);
+            void fetch("/api/persistence/records", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: "risk-analysis", companyId: company.id, payload: body.analysis }) });
         } catch (err) {
             setError((err as Error)?.message ?? "Unable to load risk analysis");
         } finally { setLoading(false); }

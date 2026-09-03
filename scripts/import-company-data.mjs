@@ -93,6 +93,10 @@ const cityMap = {
 };
 
 const keepCities = new Set(['Bengaluru', 'Hyderabad', 'Pune', 'Gurugram', 'Delhi']);
+const enrichmentPath = path.resolve('data/companies/enrichment.json');
+const enrichment = fs.existsSync(enrichmentPath) ? JSON.parse(fs.readFileSync(enrichmentPath, 'utf8')) : [];
+if (!Array.isArray(enrichment)) throw new Error('data/companies/enrichment.json must be an array');
+const enrichmentById = new Map(enrichment.filter((entry) => entry && typeof entry.id === 'string').map((entry) => [entry.id, entry]));
 
 function normalizeCity(raw) {
     if (!raw) return null;
@@ -175,6 +179,16 @@ for (const [key, items] of grouped.entries()) {
     duplicatesRemoved += items.length - 1;
 }
 
+let enriched = 0;
+for (const company of deduped) {
+    const entry = enrichmentById.get(company.id);
+    if (!entry) continue;
+    for (const key of ['website', 'logo', 'description']) {
+        if (typeof entry[key] === 'string' && entry[key].trim()) company[key] = entry[key].trim();
+    }
+    enriched++;
+}
+
 // ensure output directory
 const outDir = path.resolve('frontend/public/company-data');
 fs.mkdirSync(outDir, { recursive: true });
@@ -187,7 +201,8 @@ const meta = {
     sourceRows: data.length,
     imported: deduped.length,
     duplicatesRemoved,
-    invalidCoords
+    invalidCoords,
+    verifiedEnrichmentRecords: enriched
 };
 fs.writeFileSync(path.join(outDir, 'companies.meta.json'), JSON.stringify(meta, null, 2), 'utf8');
 
