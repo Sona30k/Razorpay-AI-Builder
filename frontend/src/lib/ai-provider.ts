@@ -15,13 +15,13 @@ export function isMockAiMode() {
  * Selects a server-side provider. `auto` keeps local development on Ollama,
  * while Vercel prefers the hosted Gemini provider when it is explicitly set up.
  */
-export async function generateAiJson(prompt: string, maxOutputTokens: number, timeoutMs?: number) {
+export async function generateAiJson(prompt: string, maxOutputTokens: number, _timeoutMs?: number) {
   const configured = process.env.AI_PROVIDER?.toLowerCase() ?? "auto";
   const provider = configured === "auto" ? (process.env.VERCEL === "1" ? "gemini" : "ollama") : configured;
 
   try {
     if (provider === "gemini") return await generateGeminiJson(prompt, maxOutputTokens);
-    if (provider === "ollama") return await generateOllamaJson(prompt, maxOutputTokens, timeoutMs);
+    if (provider === "ollama") return await generateOllamaJson(prompt, maxOutputTokens);
     throw new AiProviderError(503);
   } catch (error) {
     if (error instanceof AiProviderError) throw error;
