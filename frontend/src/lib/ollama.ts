@@ -9,7 +9,7 @@ function cleanJson(value: string) {
 }
 
 /** Calls the locally running Ollama service from the server only. */
-export async function generateOllamaJson(prompt: string, maxOutputTokens: number) {
+export async function generateOllamaJson(prompt: string, maxOutputTokens: number, timeoutMs = 90_000) {
   const baseUrl = process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434";
 
   try {
@@ -23,7 +23,7 @@ export async function generateOllamaJson(prompt: string, maxOutputTokens: number
         stream: false,
         options: { temperature: 0.2, num_predict: maxOutputTokens },
       }),
-      signal: AbortSignal.timeout(90_000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
 
     if (!response.ok) throw new OllamaProviderError(response.status);

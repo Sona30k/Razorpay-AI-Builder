@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Vector3 } from "three";
 import { CameraController } from "@/components/map/CameraController";
 import { CityInfo } from "@/components/map/CityInfo";
@@ -33,9 +33,11 @@ export function TechMap() {
 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [search, setSearch] = useState("");
+  const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [aiCompany, setAiCompany] = useState<Company | null>(null);
   const [companyFocusTarget, setCompanyFocusTarget] = useState<Vector3 | null>(null);
+  const companySearchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/company-data/companies.json")
@@ -61,12 +63,25 @@ export function TechMap() {
     setSelectedCompany(null);
     setAiCompany(null);
     setSearch("");
+    setIsCompanyDropdownOpen(false);
   };
 
   const selectCompany = (company: Company | null) => {
     setSelectedCompany(company);
     setAiCompany(null);
+    setIsCompanyDropdownOpen(false);
   };
+
+  useEffect(() => {
+    const closeDropdown = (event: MouseEvent) => {
+      if (!companySearchRef.current?.contains(event.target as Node)) {
+        setIsCompanyDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", closeDropdown);
+    return () => document.removeEventListener("mousedown", closeDropdown);
+  }, []);
 
   const cityFocusTarget = useMemo(() => {
     if (!selectedCity) {
@@ -157,30 +172,6 @@ export function TechMap() {
         </div>
       </div>
 
-      {!cityMode ? <div className="pointer-events-none absolute inset-x-3 bottom-4 flex justify-center sm:inset-y-0 sm:right-6 sm:left-auto sm:items-center sm:pr-0 lg:right-8">
-        <div className="theme-surface pointer-events-auto w-full max-w-[22rem] rounded-lg border border-white/10 bg-slate-950/60 p-2.5 shadow-[0_0_24px_rgba(37,99,235,0.12)] backdrop-blur-md sm:w-44 sm:max-w-none sm:p-3 lg:w-48">
-          <p className="px-1 text-[9px] font-medium uppercase tracking-[0.22em] text-slate-400 sm:text-[10px] sm:tracking-[0.26em]">
-            Tech Cities
-          </p>
-          <div className="mt-2 grid grid-cols-2 gap-1.5 sm:mt-2.5 sm:grid-cols-1">
-            {TECH_CITIES.map((city) => (
-              <button
-                key={city.id}
-                type="button"
-                onClick={() => selectCity(city.id)}
-                className={`flex min-w-0 items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-left text-xs leading-5 transition-all duration-200 sm:py-1.5 sm:text-sm ${selectedCityId === city.id
-                  ? "border-sky-400/60 bg-sky-500/10 text-sky-100 shadow-[0_0_16px_rgba(56,189,248,0.2)]"
-                  : "border-white/5 bg-white/[0.02] text-slate-200 hover:border-sky-400/40 hover:bg-sky-500/5"
-                  }`}
-              >
-                <span className="truncate">{city.name}</span>
-                {selectedCityId === city.id ? <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sky-300" /> : null}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div> : null}
-
       {selectedCity ? (
         <button
           type="button"
@@ -193,18 +184,69 @@ export function TechMap() {
 
       {/* Company search + panel when a city is selected */}
       {selectedCity && !selectedCompany ? (
-        <div className="pointer-events-auto absolute left-5 top-36 w-[min(18rem,calc(100%-2.5rem))] sm:left-8 sm:top-40 sm:w-72">
+        <div ref={companySearchRef} style={{ zIndex: 20_000_000 }} className="pointer-events-auto absolute left-5 top-36 w-[min(18rem,calc(100%-2.5rem))] sm:left-8 sm:top-40 sm:w-72">
           <div className="theme-surface mx-auto w-full rounded-lg border border-white/8 bg-slate-950/70 p-1.5 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,.2)]">
             <div className="flex items-center gap-2">
               <input
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setIsCompanyDropdownOpen(true);
+                }}
+                onFocus={() => setIsCompanyDropdownOpen(true)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") setIsCompanyDropdownOpen(false);
+                  if (event.key === "Enter" && filteredCompanies.length === 1) selectCompany(filteredCompanies[0]);
+                }}
                 placeholder={`Search companies in ${selectedCity.name} (name, category, industry)`}
+                aria-label={`Search companies in ${selectedCity.name}`}
+                aria-expanded={isCompanyDropdownOpen}
+                aria-controls="company-search-results"
                 className="w-full rounded bg-transparent px-2.5 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none sm:text-sm"
               />
-              <div className="shrink-0 text-[10px] text-slate-400 sm:text-xs">{filteredCompanies.length} companies</div>
+              <button
+                type="button"
+                onClick={() => setIsCompanyDropdownOpen((open) => !open)}
+                aria-label="Browse city companies"
+                aria-expanded={isCompanyDropdownOpen}
+                className="shrink-0 rounded px-1.5 py-1 text-[10px] text-slate-300 transition hover:bg-white/10 hover:text-white sm:text-xs"
+              >
+                {filteredCompanies.length} <span aria-hidden="true">{isCompanyDropdownOpen ? "^" : "v"}</span>
+              </button>
             </div>
           </div>
+          {isCompanyDropdownOpen ? (
+            <div id="company-search-results" className="theme-surface mt-1.5 overflow-hidden rounded-lg border border-white/10 bg-slate-950/95 shadow-[0_16px_42px_rgba(0,0,0,.38)] backdrop-blur-md">
+              <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
+                <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-sky-300">Companies in {selectedCity.name}</p>
+                <span className="text-[10px] text-slate-400">{filteredCompanies.length} results</span>
+              </div>
+              <ul className="max-h-72 overflow-y-auto p-1.5" role="listbox" aria-label="Company results">
+                {filteredCompanies.length ? filteredCompanies.map((company) => {
+                  const meta = [company.category, company.industry].filter(Boolean).join(" · ");
+                  return (
+                    <li key={company.id}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={false}
+                        onClick={() => selectCompany(company)}
+                        className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left transition hover:bg-sky-400/10 focus:bg-sky-400/10 focus:outline-none"
+                      >
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-400/15 text-[10px] font-semibold text-sky-200">
+                          {company.name.slice(0, 2).toUpperCase()}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-xs font-medium text-white">{company.name}</span>
+                          {meta ? <span className="block truncate text-[10px] text-slate-400">{meta}</span> : null}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                }) : <li className="px-2 py-5 text-center text-xs text-slate-400">No companies match this search.</li>}
+              </ul>
+            </div>
+          ) : null}
         </div>
       ) : null}
 

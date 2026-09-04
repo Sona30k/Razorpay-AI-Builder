@@ -1,37 +1,55 @@
 "use client";
 
-import React from "react";
 import type { Company } from "@/types/company";
 import { companySector, formatFunding, investorNames } from "@/lib/investor";
 
-export default function ComparePanel({ companies, onClose }: { companies: Company[]; onClose: any }) {
-    if (!companies || companies.length === 0) return null;
-    return (
-        <div className="fixed inset-0 z-40 flex items-end justify-center">
-            <div className="theme-surface w-full max-w-6xl rounded-t-lg border p-6">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">COMPANY COMPARISON</h3>
-                    <button onClick={onClose} className="rounded bg-white/6 px-2 py-1">Close</button>
-                </div>
-                <div className="mt-4 overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr>
-                                <th className="text-left">Field</th>
-                                {companies.map(c => <th key={c.id} className="text-left pl-4">{c.name}</th>)}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td className="text-slate-400">City</td>{companies.map(c => <td key={c.id} className="pl-4">{c.city || 'Not available'}</td>)}</tr>
-                            <tr><td className="text-slate-400">Industry</td>{companies.map(c => <td key={c.id} className="pl-4">{companySector(c)}</td>)}</tr>
-                            <tr><td className="text-slate-400">Funding</td>{companies.map(c => <td key={c.id} className="pl-4">{formatFunding(c)}</td>)}</tr>
-                            <tr><td className="text-slate-400">Investors</td>{companies.map(c => <td key={c.id} className="pl-4">{investorNames(c).join(', ') || 'Not available'}</td>)}</tr>
-                            <tr><td className="text-slate-400">Website</td>{companies.map(c => <td key={c.id} className="pl-4">{c.website || 'Not available'}</td>)}</tr>
-                            <tr><td className="text-slate-400">Data confidence</td>{companies.map(c => <td key={c.id} className="pl-4">{[c.city, companySector(c), c.description].filter(Boolean).length >= 3 ? 'Medium' : 'Low'}</td>)}</tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+type Props = {
+  companies: Company[];
+  onClose: () => void;
+};
+
+export default function ComparePanel({ companies, onClose }: Props) {
+  if (companies.length < 2) return null;
+
+  const rows = [
+    { label: "City", value: (company: Company) => company.city || "Not available" },
+    { label: "Industry", value: companySector },
+    { label: "Funding", value: formatFunding },
+    { label: "Investors", value: (company: Company) => investorNames(company).join(", ") || "Not available" },
+    { label: "Website", value: (company: Company) => company.website || "Not available" },
+    { label: "Data confidence", value: (company: Company) => [company.city, companySector(company), company.description].filter(Boolean).length >= 3 ? "Medium" : "Low" },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/75 p-3 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="Company comparison">
+      <section className="flex max-h-[calc(100vh-1.5rem)] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-slate-600 bg-slate-900 text-slate-100 shadow-[0_24px_80px_rgba(0,0,0,0.6)] sm:max-h-[calc(100vh-3rem)]">
+        <header className="flex items-center justify-between gap-4 border-b border-slate-700 px-4 py-3 sm:px-6 sm:py-4">
+          <div>
+            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-sky-300">Investor Radar</p>
+            <h3 className="mt-1 text-base font-semibold sm:text-lg">Company Comparison</h3>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-md border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-slate-100 transition hover:border-sky-400 hover:bg-slate-700">Close</button>
+        </header>
+
+        <div className="overflow-auto p-3 sm:p-5">
+          <table className="min-w-[44rem] w-full border-collapse text-left text-sm">
+            <thead className="sticky top-0 bg-slate-900 text-slate-100">
+              <tr className="border-b border-slate-700">
+                <th scope="col" className="w-36 px-3 py-3 text-xs font-medium uppercase tracking-[0.12em] text-slate-400">Field</th>
+                {companies.map((company) => <th key={company.id} scope="col" className="min-w-[15rem] px-3 py-3 font-semibold text-slate-50">{company.name}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.label} className="border-b border-slate-800 last:border-0">
+                  <th scope="row" className="bg-slate-900/60 px-3 py-3 align-top text-xs font-medium uppercase tracking-[0.1em] text-slate-400">{row.label}</th>
+                  {companies.map((company) => <td key={company.id} className="break-words px-3 py-3 align-top leading-6 text-slate-100">{row.value(company)}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-    );
+      </section>
+    </div>
+  );
 }

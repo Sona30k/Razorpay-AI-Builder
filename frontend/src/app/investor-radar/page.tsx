@@ -39,7 +39,10 @@ export default function InvestorRadarPage() {
                         <p className="mt-1 text-sm text-slate-300">Discover India's technology companies through funding, sector, geography, and business intelligence.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Link href="/" className="rounded bg-white/6 px-3 py-2 text-sm hover:bg-white/10">← Back to Globe</Link>
+                        <Link href="/" aria-label="Back to globe" className="inline-flex items-center gap-2 rounded-md border border-slate-600 bg-slate-900 px-3 py-2 text-sm font-medium text-slate-100 transition hover:border-sky-400 hover:bg-slate-800">
+                            <span aria-hidden="true">←</span>
+                            Back
+                        </Link>
                     </div>
                 </div>
 

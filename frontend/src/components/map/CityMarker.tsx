@@ -115,33 +115,48 @@ export function CityMarker({ city, isSelected, onSelect }: CityMarkerProps) {
                 sprite
                 transform={false}
                 style={{
-                    pointerEvents: "none",
+                    pointerEvents: "auto",
                     opacity: labelVisible ? 1 : 0,
                     transition: "opacity 0.15s ease"
                 }}
             >
-                <div
+                <button
+                    type="button"
+                    aria-label={`Open ${displayName} city view`}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onSelect(city.id);
+                    }}
+                    onPointerEnter={() => {
+                        setHovered(true);
+                        document.body.style.cursor = "pointer";
+                    }}
+                    onPointerLeave={() => {
+                        setHovered(false);
+                        document.body.style.cursor = "default";
+                    }}
                     style={{
                         display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        padding: "2px 5px",
+                        padding: "4px 8px",
                         borderRadius: "6px",
-                        border: "1px solid rgba(148, 163, 184, 0.18)",
-                        background: "rgba(15, 23, 42, 0.7)",
-                        boxShadow: "0 8px 18px rgba(2, 6, 23, 0.22)",
-                        fontSize: "clamp(10px, 0.72vw, 12px)",
+                        border: "1px solid rgba(125, 211, 252, 0.52)",
+                        background: "rgba(15, 23, 42, 0.84)",
+                        boxShadow: "0 8px 20px rgba(2, 6, 23, 0.34), 0 0 16px rgba(56, 189, 248, 0.2)",
+                        fontSize: "clamp(12px, 0.92vw, 15px)",
                         lineHeight: 1.2,
-                        fontWeight: 600,
-                        color: isSelected ? "#f8fafc" : hovered ? "#dbeafe" : "#e2e8f0",
+                        fontWeight: 700,
+                        color: isSelected ? "#ffffff" : hovered ? "#f0f9ff" : "#e0f2fe",
                         whiteSpace: "nowrap",
                         letterSpacing: "0",
                         textShadow: "0 1px 2px rgba(15, 23, 42, 0.85)",
-                        transform: "translateY(-1px)"
+                        transform: "translateY(-1px)",
+                        cursor: "pointer"
                     }}
                 >
                     {displayName}
-                </div>
+                </button>
             </Html>
         </group>
     );

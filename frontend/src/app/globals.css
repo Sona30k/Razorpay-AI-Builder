@@ -46,6 +46,25 @@ select {
     linear-gradient(145deg, #050608 0%, #0c1118 52%, #040507 100%);
 }
 
+.investor-radar select {
+  color-scheme: dark;
+  border: 1px solid rgba(148, 163, 184, 0.42);
+  background-color: #111827;
+  color: #f8fafc;
+}
+
+.investor-radar select:focus {
+  border-color: #7dd3fc;
+  outline: 2px solid rgba(56, 189, 248, 0.24);
+  outline-offset: 1px;
+}
+
+.investor-radar select option {
+  /* Native option popups use a light system surface in Chromium. */
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
 .loader-grid {
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
