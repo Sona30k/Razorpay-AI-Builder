@@ -31,7 +31,7 @@ if (MOCK) {
 }
 
 const apiKey = process.env.GEMINI_API_KEY;
-const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 if (!apiKey) {
     console.error('GEMINI_API_KEY is not set in environment (.env.local).');
     process.exit(2);
@@ -61,7 +61,7 @@ if (!apiKey) {
         const genResponse = await ai.models.generateContent({
             model,
             contents: prompt,
-            config: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 100 }
+            config: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 1000 }
         });
         const text = genResponse?.text;
         if (typeof text !== 'string' || !text.trim()) throw new Error('Gemini returned no text.');
