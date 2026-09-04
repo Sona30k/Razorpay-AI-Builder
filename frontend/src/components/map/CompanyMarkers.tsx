@@ -131,7 +131,7 @@ export function CompanyMarkers({ companies, latitude, longitude, onSelectCompany
       ) : null}
 
       {labelCompany && labelPoint ? (
-        <Html center position={[labelPoint.x, 0.22, labelPoint.z]} style={{ pointerEvents: "auto" }}>
+        <Html center position={[labelPoint.x, 0.22, labelPoint.z]} zIndexRange={[0, 0]} style={{ pointerEvents: "auto" }}>
           <button
             type="button"
             onClick={(event) => {
