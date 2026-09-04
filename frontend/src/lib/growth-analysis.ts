@@ -17,6 +17,9 @@ export function normalizeGrowthAnalysis(value: unknown): unknown {
   const normalized = { ...analysis };
   if (Array.isArray(normalized.expectedImpact) && normalized.expectedImpact.every((item) => typeof item === "string")) normalized.expectedImpact = normalized.expectedImpact.join(" ");
   if (typeof normalized.kpis === "string" && normalized.kpis.trim()) normalized.kpis = [normalized.kpis];
+  for (const key of ["difficulty", "priority"] as const) {
+    if (typeof normalized[key] === "string") normalized[key] = `${normalized[key].charAt(0).toUpperCase()}${normalized[key].slice(1).toLowerCase()}`;
+  }
   return normalized;
 }
 
@@ -38,6 +41,25 @@ export type GrowthPlan = {
 };
 
 export type GrowthPlanAction = GrowthPlan["actions"][number];
+
+export function normalizeGrowthPlan(value: unknown): unknown {
+  if (!value || typeof value !== "object") return value;
+  const plan = value as Record<string, unknown>;
+  if (!Array.isArray(plan.actions)) return plan;
+
+  return {
+    ...plan,
+    risks: Array.isArray(plan.risks) ? plan.risks.filter((risk) => typeof risk === "string") : plan.risks,
+    actions: plan.actions.map((action) => {
+      if (!action || typeof action !== "object") return action;
+      const normalized = { ...(action as Record<string, unknown>) };
+      if (typeof normalized.priority === "string") {
+        normalized.priority = `${normalized.priority.charAt(0).toUpperCase()}${normalized.priority.slice(1).toLowerCase()}`;
+      }
+      return normalized;
+    })
+  };
+}
 
 export function isGrowthPlan(value: unknown): value is GrowthPlan {
   if (!value || typeof value !== "object") return false;
