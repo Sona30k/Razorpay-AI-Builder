@@ -6,7 +6,24 @@ TechAtlas AI helps people move from a geographic view of India's technology ecos
 
 The project is designed for technology ecosystem explorers, founders and business teams, investors and researchers, and merchants who want a visual starting point for exploration and planning. Geography provides the context; structured company data and AI-assisted workflows help turn that context into questions, hypotheses, and next steps.
 
+## Live Deployment
+
+Try the deployed application at [razorpay-ai-builder-41su.vercel.app](https://razorpay-ai-builder-41su.vercel.app/).
+
 ## Product Flows
+
+### Primary User Workflow
+
+```text
+Open TechAtlas
+  -> Select a highlighted city on the globe
+  -> Search or select a company
+  -> Inspect the company profile
+  -> Explore with AI
+  -> Review growth analysis or risk analysis
+  -> Build a growth plan
+  -> Select an action in the Action Center
+```
 
 ### Ecosystem Explorer
 
@@ -116,7 +133,45 @@ AI is never called directly from browser code.
 - `AI_PROVIDER=auto` selects Ollama locally and Gemini on Vercel.
 - `MOCK_AI_MODE=true` bypasses providers and returns deterministic demo data for growth analysis, risk analysis, planning, investor briefs, and merchant opportunities.
 
-Each route validates structured output before the frontend receives it. Provider or schema failures are returned as safe application errors rather than exposing secrets or raw provider responses.
+Each route validates structured output before the frontend receives it. Provider and schema failures never expose secrets or raw provider responses.
+
+When a configured provider is unavailable, rate-limited, returns malformed JSON, or fails, the company Growth Analysis, Risk Analysis, Growth Plan, and Investor Brief routes fall back to deterministic company-specific demo data. The frontend visibly labels those responses as `DEMO MODE`; a real provider response is never silently replaced or misrepresented.
+
+## System Architecture
+
+```text
+                         +--------------------------+
+                         |        Next.js App        |
+                         |  React + Three.js / R3F   |
+                         +------------+-------------+
+                                      |
+          +---------------------------+---------------------------+
+          |                           |                           |
+          v                           v                           v
+  Globe and City Explorer      Investor Radar          Merchant Growth Intelligence
+  Natural Earth + city data    Company filters,        Historical event aggregates
+  company marker selection     comparison, watchlist   and opportunity workflow
+          |                           |                           |
+          +---------------------------+---------------------------+
+                                      |
+                                      v
+                         Next.js Server API Routes
+                                      |
+             +------------------------+------------------------+
+             |                        |                        |
+             v                        v                        v
+    Gemini via @google/genai   Ollama (local/hosted)   Deterministic demo fallback
+    Server-side key only       Server-side endpoint    Clearly labelled in the UI
+```
+
+### Architecture Responsibilities
+
+- **Client UI:** renders the globe, city views, company discovery, investor tools, and merchant workflows. Browser code never receives AI-provider secrets.
+- **Local data layer:** serves bundled Natural Earth geometry, city datasets, imported company records, and historical merchant aggregates.
+- **Next.js API layer:** validates requests, prepares compact company context, calls the configured provider server-side, validates structured JSON, and returns safe application responses.
+- **AI provider layer:** supports Gemini for hosted generation and Ollama for local or reachable hosted inference. Both are selected through environment variables.
+- **Fallback layer:** returns deterministic, company-specific demo output only after a real provider request cannot produce valid output. This keeps deployed flows usable without pretending mock output is live AI.
+- **Persistence layer:** offers optional server-side persistence endpoints; browser-storage fallbacks keep lightweight UI state available during local/demo use.
 
 ## API Routes
 
