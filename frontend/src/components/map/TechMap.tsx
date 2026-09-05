@@ -13,7 +13,7 @@ import { TECH_CITIES } from "@/lib/cities";
 import { CompanyPanel } from "@/components/company/CompanyPanel";
 import { AIGrowthPanel } from "@/components/company/AIGrowthPanel";
 import Link from "next/link";
-import { companyDiagnostics, filterCompanies, isNearCity } from "@/lib/companies";
+import { CITY_METERS_TO_SCENE, companyDiagnostics, filterCompanies, isNearCity } from "@/lib/companies";
 import type { Company } from "@/types/company";
 import {
   GLOBE_RADIUS,
@@ -101,14 +101,13 @@ export function TechMap() {
       return;
     }
 
-    const METERS_TO_SCENE = 0.014;
     const cityLatitude = selectedCity.lat;
     const cityLongitude = selectedCity.lon;
     const lat = selectedCompany.latitude;
     const lon = selectedCompany.longitude;
     const metersPerLongitude = 111_320 * Math.cos((cityLatitude * Math.PI) / 180);
-    const x = (lon - cityLongitude) * metersPerLongitude * METERS_TO_SCENE;
-    const z = -(lat - cityLatitude) * 110_540 * METERS_TO_SCENE;
+    const x = (lon - cityLongitude) * metersPerLongitude * CITY_METERS_TO_SCENE;
+    const z = -(lat - cityLatitude) * 110_540 * CITY_METERS_TO_SCENE;
     // place target slightly above ground so camera can look at it
     const target = new Vector3(x, 0.4, z);
     setCompanyFocusTarget(target);

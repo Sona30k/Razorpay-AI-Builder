@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { deriveMerchantGrowth, type MerchantData, type MerchantOpportunity } from "@/lib/merchant";
-import { generateAiJson, AiProviderError, isMockAiMode } from "@/lib/ai-provider";
+import { generateAiJson, isMockAiMode } from "@/lib/ai-provider";
 export const runtime = "nodejs";
 const types = new Set(["upsell", "cross_sell", "product_improvement", "campaign"]);
 const priorities = new Set(["High", "Medium", "Low"]);
@@ -43,4 +43,34 @@ function validatedOutput(value: unknown, merchant: MerchantData): { summary: str
 
   return opportunities.length ? { summary: data.summary, opportunities } : null;
 }
-export async function POST(request: Request) { try { const { merchant } = await request.json() as { merchant?: MerchantData }; if (!validData(merchant)) return NextResponse.json({ error: "Invalid merchant data." }, { status: 400 }); if (isMockAiMode()) return NextResponse.json({ summary: "DEMO MODE — Opportunities are deterministically derived from the supplied historical merchant event data.", opportunities: deriveMerchantGrowth(merchant), demo: true }); const output = await generateAiJson(`Use only this merchant data: ${JSON.stringify(merchant)}. Return JSON only. Generate 3 or 4 opportunities. Each opportunity must use one exact type value: "upsell", "cross_sell", "product_improvement", or "campaign". Never write a pipe character in type. Each priority must be exactly "High", "Medium", or "Low". product and relatedProduct must exactly match product names in the data. Every evidence string must name a supplied product and include one exact supplied number. Do not invent values, relationships, or product names. Required shape: {"summary":"string","opportunities":[{"id":"string","type":"product_improvement","title":"string","priority":"High","product":"exact product from data","relatedProduct":"","evidence":"exact product and supplied number","recommendation":"string","expectedImpact":"string","metrics":["string"]}]}.`, 1800); const result = validatedOutput(output, merchant); if (!result) return NextResponse.json({ error: "Growth analysis is temporarily unavailable. Please try again later." }, { status: 502 }); return NextResponse.json({ ...result, demo: false }); } catch (error) { const status = error instanceof AiProviderError ? error.status : undefined; return NextResponse.json({ error: "Growth analysis is temporarily unavailable. Please try again later." }, { status: status === 429 ? 429 : 502 }); } }
+
+function dataDerivedResponse(merchant: MerchantData, demo: boolean) {
+  return NextResponse.json({
+    summary: "Opportunities are derived from the imported historical product, cart, purchase, and revenue records.",
+    opportunities: deriveMerchantGrowth(merchant),
+    demo,
+    source: demo ? "demo" : "data-derived"
+  });
+}
+
+export async function POST(request: Request) {
+  let merchant: MerchantData | undefined;
+  try {
+    ({ merchant } = await request.json() as { merchant?: MerchantData });
+    if (!validData(merchant)) return NextResponse.json({ error: "Invalid merchant data." }, { status: 400 });
+    if (isMockAiMode()) return dataDerivedResponse(merchant, true);
+
+    // Merchant insights are fully supported by the imported historical records.
+    // Keep the primary workflow fast and deterministic; AI enrichment is opt-in.
+    if (process.env.MERCHANT_AI_ENRICHMENT !== "true") return dataDerivedResponse(merchant, false);
+
+    const output = await generateAiJson(`Use only this merchant data: ${JSON.stringify(merchant)}. Return JSON only. Generate 3 or 4 opportunities. Each opportunity must use one exact type value: "upsell", "cross_sell", "product_improvement", or "campaign". Never write a pipe character in type. Each priority must be exactly "High", "Medium", or "Low". product and relatedProduct must exactly match product names in the data. Every evidence string must name a supplied product and include one exact supplied number. Do not invent values, relationships, or product names. Required shape: {"summary":"string","opportunities":[{"id":"string","type":"product_improvement","title":"string","priority":"High","product":"exact product from data","relatedProduct":"","evidence":"exact product and supplied number","recommendation":"string","expectedImpact":"string","metrics":["string"]}]}.`, 1800);
+    const result = validatedOutput(output, merchant);
+    if (!result) return dataDerivedResponse(merchant, false);
+    return NextResponse.json({ ...result, demo: false, source: "ai" });
+  } catch (error) {
+    // The imported records can still support a safe, deterministic analysis when the provider is unavailable.
+    if (validData(merchant)) return dataDerivedResponse(merchant, false);
+    return NextResponse.json({ error: "Growth analysis is temporarily unavailable. Please try again later." }, { status: 502 });
+  }
+}

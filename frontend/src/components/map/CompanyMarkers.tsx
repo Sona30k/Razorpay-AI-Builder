@@ -2,9 +2,9 @@
 
 import { Html } from "@react-three/drei";
 import { useMemo, useState } from "react";
-import type { ThreeEvent } from "@react-three/fiber";
+import { useThree, type ThreeEvent } from "@react-three/fiber";
 import type { Company } from "@/types/company";
-import { hasUsableCoordinates, isNearCity, type MappableCompany } from "@/lib/companies";
+import { CITY_METERS_TO_SCENE, hasUsableCoordinates, isNearCity, type MappableCompany } from "@/lib/companies";
 import { fundingAmount } from "@/lib/investor";
 
 type Props = {
@@ -15,8 +15,6 @@ type Props = {
   selectedCompanyId?: string | null;
 };
 
-const METERS_TO_SCENE = 0.0016;
-
 type PositionedCompany = {
   company: MappableCompany;
   point: { x: number; z: number };
@@ -25,8 +23,8 @@ type PositionedCompany = {
 function toLocalPoint(company: MappableCompany, cityLatitude: number, cityLongitude: number) {
   const metersPerLongitude = 111_320 * Math.cos((cityLatitude * Math.PI) / 180);
   return {
-    x: (company.longitude - cityLongitude) * metersPerLongitude * METERS_TO_SCENE,
-    z: -(company.latitude - cityLatitude) * 110_540 * METERS_TO_SCENE
+    x: (company.longitude - cityLongitude) * metersPerLongitude * CITY_METERS_TO_SCENE,
+    z: -(company.latitude - cityLatitude) * 110_540 * CITY_METERS_TO_SCENE
   };
 }
 
@@ -37,6 +35,7 @@ function fallbackPoint(index: number) {
 }
 
 export function CompanyMarkers({ companies, latitude, longitude, onSelectCompany, selectedCompanyId }: Props) {
+  const { size } = useThree();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const positioned = useMemo<PositionedCompany[]>(() => companies
     .filter(hasUsableCoordinates)
@@ -60,18 +59,27 @@ export function CompanyMarkers({ companies, latitude, longitude, onSelectCompany
 
   const selected = positioned.find(({ company }) => company.id === selectedCompanyId) ?? null;
   const featured = useMemo(() => {
-    const placed: { x: number; z: number }[] = [];
-    return positioned.slice().sort((a, b) => (fundingAmount(b.company) ?? -1) - (fundingAmount(a.company) ?? -1) || a.company.name.localeCompare(b.company.name)).slice(0, 30).map(({ company, point }, index) => {
-      let label = { x: point.x, z: point.z };
-      for (let step = 0; step < 80; step += 1) {
-        const angle = ((index * 137.5 + step * 47) * Math.PI) / 180;
-        const radius = 1.2 + Math.floor(step / 8) * 0.85;
-        const candidate = { x: point.x + Math.cos(angle) * radius, z: point.z + Math.sin(angle) * radius };
-        if (placed.every((other) => Math.hypot(candidate.x - other.x, candidate.z - other.z) > 2.8)) { label = candidate; break; }
-      }
-      placed.push(label); return { company, point, label, index };
-    });
-  }, [positioned]);
+    const viewport = size.width;
+    const columns = viewport < 640 ? 2 : viewport < 1024 ? 3 : 5;
+    const visibleCount = viewport < 640 ? 8 : viewport < 1024 ? 12 : 20;
+    const rows = Math.ceil(visibleCount / columns);
+    const xRange = viewport < 640 ? 3.1 : 5.5;
+    const zRange = viewport < 640 ? 4.4 : 5.2;
+
+    return positioned
+      .slice()
+      .sort((a, b) => (fundingAmount(b.company) ?? -1) - (fundingAmount(a.company) ?? -1) || a.company.name.localeCompare(b.company.name))
+      .slice(0, visibleCount)
+      .map(({ company, point }, index) => {
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        const label = {
+          x: -xRange + (column / (columns - 1)) * xRange * 2,
+          z: -zRange + (row / (rows - 1)) * zRange * 2
+        };
+        return { company, point, label, index };
+      });
+  }, [positioned, size.width]);
   const hovered = hoveredIndex === null ? null : positioned[hoveredIndex] ?? null;
   const labelCompany = selected?.company ?? hovered?.company ?? null;
   const labelPoint = selected?.point ?? hovered?.point ?? null;
@@ -113,12 +121,19 @@ export function CompanyMarkers({ companies, latitude, longitude, onSelectCompany
 
       {!selected && featured.map(({ company, point, label, index }) => {
         const isSelected = company.id === selectedCompanyId;
-        return <group key={company.id} position={[point.x, 0.12, point.z]}>
-          <Html center position={[label.x - point.x, 0.2 + (index % 4) * 0.04, label.z - point.z]} style={{ pointerEvents: "auto" }}>
-            <button type="button" onClick={(event) => { event.stopPropagation(); onSelectCompany?.(company); }} className={`group flex max-w-44 items-center gap-1.5 rounded-md border bg-white px-1.5 py-1 text-left shadow-[0_5px_14px_rgba(0,0,0,.32)] transition hover:scale-[1.04] ${isSelected ? "border-sky-400 ring-2 ring-sky-300/40" : "border-slate-200"}`}>
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[9px] font-bold text-sky-700">{company.name.split(/\s+/).slice(0,2).map((part) => part[0]).join("")}</span>
-              <span className="min-w-0"><span className="block truncate text-[11px] font-semibold text-slate-800">{company.name}</span><span className="block truncate text-[9px] text-slate-500">{company.industry ?? company.category ?? ""}</span></span>
-            </button>
+        const connector = new Float32Array([point.x, 0.13, point.z, label.x, 0.13, label.z]);
+        return <group key={company.id}>
+          <line>
+            <bufferGeometry>
+              <bufferAttribute attach="attributes-position" args={[connector, 3]} count={2} itemSize={3} />
+            </bufferGeometry>
+            <lineBasicMaterial color="#6b8491" transparent opacity={0.38} depthTest={false} />
+          </line>
+          <Html center position={[label.x, 0.2 + (index % 3) * 0.035, label.z]} zIndexRange={[0, 0]} style={{ pointerEvents: "auto" }}>
+              <button type="button" onClick={(event) => { event.stopPropagation(); onSelectCompany?.(company); }} className={`group flex max-w-44 items-center gap-1.5 rounded-md border bg-white px-1.5 py-1 text-left shadow-[0_5px_14px_rgba(0,0,0,.32)] transition hover:scale-[1.04] ${isSelected ? "border-sky-400 ring-2 ring-sky-300/40" : "border-slate-200"}`}>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[9px] font-bold text-sky-700">{company.name.split(/\s+/).slice(0,2).map((part) => part[0]).join("")}</span>
+                <span className="min-w-0"><span className="block truncate text-[11px] font-semibold text-slate-800">{company.name}</span><span className="block truncate text-[9px] text-slate-500">{company.industry ?? company.category ?? ""}</span></span>
+              </button>
           </Html>
         </group>;
       })}

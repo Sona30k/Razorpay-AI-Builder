@@ -1,6 +1,6 @@
 import type { Company } from "@/types/company";
 
-const METERS_TO_SCENE = 0.014;
+export const CITY_METERS_TO_SCENE = 0.00018;
 const CITY_MAP_RADIUS_KM = 35;
 
 export type MappableCompany = Company & { latitude: number; longitude: number };

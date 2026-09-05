@@ -123,6 +123,7 @@ export function CityMarker({ city, isSelected, onSelect }: CityMarkerProps) {
                 <button
                     type="button"
                     aria-label={`Open ${displayName} city view`}
+                    className="atlas-city-label-prompt"
                     onClick={(event) => {
                         event.stopPropagation();
                         onSelect(city.id);
@@ -143,7 +144,6 @@ export function CityMarker({ city, isSelected, onSelect }: CityMarkerProps) {
                         borderRadius: "6px",
                         border: "1px solid rgba(125, 211, 252, 0.52)",
                         background: "rgba(15, 23, 42, 0.84)",
-                        boxShadow: "0 8px 20px rgba(2, 6, 23, 0.34), 0 0 16px rgba(56, 189, 248, 0.2)",
                         fontSize: "clamp(12px, 0.92vw, 15px)",
                         lineHeight: 1.2,
                         fontWeight: 700,
@@ -151,7 +151,6 @@ export function CityMarker({ city, isSelected, onSelect }: CityMarkerProps) {
                         whiteSpace: "nowrap",
                         letterSpacing: "0",
                         textShadow: "0 1px 2px rgba(15, 23, 42, 0.85)",
-                        transform: "translateY(-1px)",
                         cursor: "pointer"
                     }}
                 >

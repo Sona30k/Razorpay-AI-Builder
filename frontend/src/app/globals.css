@@ -46,6 +46,27 @@ select {
     linear-gradient(145deg, #050608 0%, #0c1118 52%, #040507 100%);
 }
 
+@keyframes atlas-city-label-prompt {
+  0%, 100% {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(2, 6, 23, 0.34), 0 0 16px rgba(56, 189, 248, 0.2);
+  }
+  50% {
+    transform: translateY(-7px);
+    box-shadow: 0 13px 24px rgba(2, 6, 23, 0.4), 0 0 24px rgba(56, 189, 248, 0.45);
+  }
+}
+
+.atlas-city-label-prompt {
+  animation: atlas-city-label-prompt 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atlas-city-label-prompt {
+    animation: none;
+  }
+}
+
 .investor-radar select {
   color-scheme: dark;
   border: 1px solid rgba(148, 163, 184, 0.42);
